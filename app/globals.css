@@ -1,0 +1,1224 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  /* Typography */
+  --font-sans: var(--font-eng);
+  --font-eng: var(--font-eng);
+  --font-ko: var(--font-ko);
+  --font-jp: var(--font-jp);
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+
+  /* Danchung (단청) palette (modern reinterpretation) */
+  --color-danchung-red: #c53030;
+  --color-danchung-blue: #2b6cb0;
+  --color-danchung-gold: #d4af37;
+  --color-night: #050505;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  /* Root layout이 locale 별 `font-*` 클래스로 폰트를 결정합니다. */
+  font-family: inherit;
+}
+
+/* Soft danchung glow + ornament animation */
+@keyframes danchung-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes danchung-dash {
+  0% {
+    stroke-dashoffset: 60;
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.65;
+  }
+}
+
+@keyframes danchung-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.25))
+      drop-shadow(0 0 22px rgba(197, 48, 48, 0.18));
+    opacity: 0.75;
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.45))
+      drop-shadow(0 0 34px rgba(43, 108, 176, 0.25));
+    opacity: 1;
+  }
+}
+
+.danchung-ring {
+  animation: danchung-rotate 14s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+.danchung-stroke {
+  animation: danchung-dash 2.6s ease-in-out infinite;
+  stroke-dasharray: 10 18;
+  stroke-linecap: round;
+}
+
+.danchung-glow {
+  animation: danchung-pulse 3.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .danchung-ring,
+  .danchung-stroke,
+  .danchung-glow {
+    animation: none;
+  }
+}
+
+/* Hero background animations (image-based) */
+@keyframes hero-bg-pan {
+  0% {
+    transform: scale(1.03) translate3d(0px, 0px, 0);
+    filter: saturate(1.02) contrast(1.03);
+  }
+  45% {
+    transform: scale(1.07) translate3d(-1.5%, 1.2%, 0);
+    filter: saturate(1.08) contrast(1.04);
+  }
+  100% {
+    transform: scale(1.03) translate3d(0px, 0px, 0);
+    filter: saturate(1.02) contrast(1.03);
+  }
+}
+
+@keyframes hero-pattern-breathe {
+  0% {
+    opacity: 0.28;
+    transform: scale(1.01) translate3d(0, 0, 0);
+    filter: blur(0px) saturate(1.05);
+  }
+  50% {
+    opacity: 0.40;
+    transform: scale(1.04) translate3d(0.5%, -0.6%, 0);
+    filter: blur(0.15px) saturate(1.14);
+  }
+  100% {
+    opacity: 0.28;
+    transform: scale(1.01) translate3d(0, 0, 0);
+    filter: blur(0px) saturate(1.05);
+  }
+}
+
+.hero-bg-pan {
+  animation: hero-bg-pan 16s ease-in-out infinite;
+}
+
+.hero-pattern-breathe {
+  animation: hero-pattern-breathe 6.5s ease-in-out infinite;
+}
+
+@keyframes hero-cloth-flutter {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1.02);
+    filter: saturate(1.02) contrast(1.03);
+  }
+  40% {
+    transform: translate3d(-0.9%, -0.6%, 0) rotate(-1.2deg) scale(1.05);
+    filter: saturate(1.08) contrast(1.05);
+  }
+  70% {
+    transform: translate3d(0.6%, 0.8%, 0) rotate(0.9deg) scale(1.04);
+    filter: saturate(1.06) contrast(1.04);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1.02);
+    filter: saturate(1.02) contrast(1.03);
+  }
+}
+
+.hero-cloth-flutter {
+  animation: hero-cloth-flutter 7.5s ease-in-out infinite;
+  transform-origin: 50% 70%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg-pan,
+  .hero-pattern-breathe,
+  .hero-cloth-flutter {
+    animation: none;
+  }
+}
+
+@keyframes archiveModeHint {
+  0% {
+    opacity: 0.4;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Decoding (해독) 화면 ─── */
+.decoding-kaleido-a {
+  transform-origin: 50% 50%;
+  animation: decodingKaleidoSpinA 48s linear infinite;
+}
+
+.decoding-kaleido-b {
+  transform-origin: 50% 50%;
+  animation: decodingKaleidoSpinB 64s linear infinite reverse;
+}
+
+.decoding-kaleido-c {
+  transform-origin: 50% 50%;
+  animation: decodingKaleidoSpinC 36s linear infinite;
+}
+
+/* 팔괘 느낌의 느린 회전 링 */
+.decoding-bagua-ring {
+  transform-origin: 50% 50%;
+  animation: decodingBaguaDrift 72s linear infinite;
+}
+
+@keyframes decodingBaguaDrift {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.decoding-bagua-inner {
+  transform-origin: 50% 50%;
+  animation: decodingBaguaDrift 56s linear infinite reverse;
+}
+
+@keyframes decodingKaleidoSpinA {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes decodingKaleidoSpinB {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes decodingKaleidoSpinC {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.decoding-particle {
+  animation: decodingParticleIn var(--dur, 4s) cubic-bezier(0.45, 0.02, 0.2, 1) 1 both;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity, filter;
+}
+
+@keyframes decodingParticleIn {
+  0% {
+    transform: translate(var(--tx, 0vmin), var(--ty, 0vmin))
+      rotate(var(--spin, 0deg)) scale(1.25);
+    opacity: 0.95;
+    filter: blur(0.2px);
+  }
+  55% {
+    opacity: 0.7;
+    filter: blur(0.55px);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(0.05);
+    opacity: 0;
+    filter: blur(1.4px);
+  }
+}
+
+/* 블랙홀 코어: 4초 동안 약하게 수축/발광 */
+@keyframes decodingBlackholeCore {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: brightness(1) saturate(1);
+    opacity: 0.92;
+  }
+  55% {
+    transform: translate(-50%, -50%) scale(0.93);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.88);
+    opacity: 0.72;
+  }
+}
+
+.decoding-blackhole-core {
+  transform: translate(-50%, -50%);
+  animation: decodingBlackholeCore 4s ease-out both;
+}
+
+/* 1초 주기: 스르르 나타났다 사라짐 */
+.decoding-text-cycle {
+  animation: decodingTextCycle 1s ease-in-out infinite;
+}
+
+@keyframes decodingTextCycle {
+  0% {
+    opacity: 0.08;
+    filter: blur(1.5px);
+  }
+  35% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  65% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0.08;
+    filter: blur(1.5px);
+  }
+}
+
+/* 종료 빛 폭발 */
+@keyframes decodingBurstFlash {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(2.05);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.4);
+  }
+}
+
+.decoding-burst-layer {
+  pointer-events: none;
+  animation: decodingBurstFlash 0.6s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .decoding-kaleido-a,
+  .decoding-kaleido-b,
+  .decoding-kaleido-c,
+  .decoding-bagua-ring,
+  .decoding-bagua-inner,
+  .decoding-particle,
+  .decoding-text-cycle {
+    animation: none;
+  }
+}
+
+/* ─── Luxury Result Page ─── */
+.lux-destiny-card {
+  padding: 1.5px;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.95) 0%,
+    rgba(43, 108, 176, 0.22) 45%,
+    rgba(197, 48, 48, 0.18) 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.14),
+    0 0 110px rgba(212, 175, 55, 0.06);
+}
+
+.lux-gold-shimmer {
+  position: absolute;
+  inset: -120px;
+  pointer-events: none;
+  background: conic-gradient(
+    from 180deg,
+    rgba(255, 255, 255, 0) 0deg,
+    rgba(255, 252, 230, 0.35) 38deg,
+    rgba(212, 175, 55, 0.55) 70deg,
+    rgba(255, 255, 255, 0) 120deg
+  );
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  animation: luxGoldShimmer 8s linear infinite;
+}
+
+@keyframes luxGoldShimmer {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.lux-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(212, 175, 55, 0.9);
+  text-shadow: 0 0 24px rgba(212, 175, 55, 0.25);
+}
+
+.lux-eyebrow::after {
+  content: "";
+  height: 1px;
+  width: 34px;
+  background: linear-gradient(
+    to right,
+    rgba(212, 175, 55, 0.8),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+.lux-name {
+  margin-top: 10px;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 350;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 252, 230, 0.98) 0%,
+    rgba(212, 175, 55, 0.78) 50%,
+    rgba(43, 108, 176, 0.58) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 42px rgba(212, 175, 55, 0.10);
+}
+
+.lux-hash-label {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.52);
+  text-transform: uppercase;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+}
+
+.lux-keyword {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 252, 230, 0.92);
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  font-weight: 650;
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.06),
+    0 0 32px rgba(212, 175, 55, 0.06);
+}
+
+.lux-glass {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+  padding: 18px 18px;
+}
+
+.lux-section-head {
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(212, 175, 55, 0.95);
+  text-shadow: 0 0 26px rgba(212, 175, 55, 0.25);
+  font-weight: 750;
+}
+
+.lux-section-body {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.lux-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(5px);
+  transition:
+    opacity 800ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 800ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 800ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.lux-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.lux-btn {
+  position: relative;
+  height: 56px;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(14px);
+  color: rgba(255, 252, 230, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.08),
+    0 0 70px rgba(212, 175, 55, 0.04);
+  overflow: hidden;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.lux-btn-label {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.lux-btn--share {
+  border-color: rgba(212, 175, 55, 0.18);
+}
+
+.lux-btn--share::before {
+  content: "";
+  position: absolute;
+  inset: -40px;
+  background: radial-gradient(
+    circle at 20% 20%,
+    rgba(212, 175, 55, 0.26),
+    transparent 55%
+  );
+  opacity: 0.7;
+}
+
+.lux-btn--premium {
+  border-color: rgba(212, 175, 55, 0.55);
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.24),
+    rgba(43, 108, 176, 0.12) 45%,
+    rgba(197, 48, 48, 0.08) 100%
+  );
+}
+
+.lux-btn--premium::after {
+  content: "";
+  position: absolute;
+  inset: -80px;
+  background: conic-gradient(
+    from 180deg,
+    rgba(255, 255, 255, 0) 0deg,
+    rgba(255, 252, 230, 0.40) 35deg,
+    rgba(212, 175, 55, 0.60) 70deg,
+    rgba(255, 255, 255, 0) 120deg
+  );
+  opacity: 0.35;
+  mix-blend-mode: screen;
+  animation: luxGoldShimmer 7s linear infinite;
+}
+
+.lux-btn-pill {
+  position: relative;
+  z-index: 1;
+  margin-left: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 252, 230, 0.85);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 900;
+}
+
+.lux-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(212, 175, 55, 0.55);
+}
+
+.lux-btn:active {
+  transform: translateY(0px);
+}
+
+.lux-btn--copied {
+  border-color: rgba(43, 108, 176, 0.35);
+}
+
+/* Moonlight Oriental — 딥블랙·골드 위 달빛·산신령 안개 */
+.lux-moonlight-overlay {
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 90% 50% at 50% 0%, rgba(200, 220, 255, 0.14), transparent 55%),
+    radial-gradient(circle at 78% 18%, rgba(212, 175, 55, 0.09), transparent 42%),
+    radial-gradient(circle at 22% 35%, rgba(147, 197, 255, 0.06), transparent 45%);
+  mix-blend-mode: screen;
+}
+
+.lux-mist-layer {
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 130% 70% at 50% 100%, rgba(110, 130, 160, 0.18), transparent 52%),
+    radial-gradient(ellipse 80% 50% at 30% 80%, rgba(80, 100, 130, 0.12), transparent 50%);
+  opacity: 0.5;
+  animation: luxMistDrift 22s ease-in-out infinite;
+}
+
+@keyframes luxMistDrift {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.58;
+    transform: scale(1.02);
+  }
+}
+
+/* 단청 만화경 — 아주 느린 회전 */
+.lux-dancheong-kaleido-slow {
+  background-image: url("/pattern_danchung.jpg");
+  background-size: 420px;
+  background-repeat: repeat;
+  mix-blend-mode: overlay;
+  filter: saturate(1.15) contrast(1.06);
+  animation: luxKaleidoRotateSlow 96s linear infinite reverse;
+}
+
+@keyframes luxKaleidoRotateSlow {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1.06);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg) scale(1.06);
+  }
+}
+
+/* Oriental cyberpunk layers */
+.lux-oriental-bg {
+  background:
+    radial-gradient(circle at 20% 15%, rgba(212, 175, 55, 0.1), transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(43, 108, 176, 0.12), transparent 38%),
+    radial-gradient(circle at 50% 80%, rgba(197, 48, 48, 0.08), transparent 44%);
+}
+
+.lux-oriental-bagua {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(212, 175, 55, 0.26) 0deg 10deg,
+    rgba(5, 5, 9, 0) 10deg 20deg
+  );
+  animation: luxBaguaRotate 86s linear infinite;
+  mix-blend-mode: screen;
+}
+
+.lux-oriental-kaleido {
+  background-image: url("/pattern_danchung.jpg");
+  background-size: 420px;
+  background-repeat: repeat;
+  mix-blend-mode: overlay;
+  filter: saturate(1.18) contrast(1.08);
+  animation: luxKaleidoRotate 62s linear infinite reverse;
+}
+
+@keyframes luxBaguaRotate {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes luxKaleidoRotate {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg) scale(1.08);
+  }
+}
+
+.lux-gold-dust {
+  background-image:
+    radial-gradient(circle, rgba(255, 248, 210, 0.8) 0.8px, transparent 1px),
+    radial-gradient(circle, rgba(212, 175, 55, 0.58) 1px, transparent 1.2px);
+  background-size:
+    26px 26px,
+    42px 42px;
+  background-position:
+    0 0,
+    11px 7px;
+  opacity: 0.24;
+  animation: luxDustFlow 30s linear infinite;
+}
+
+/* 결과 페이지: 금가루 폭발감 강화 */
+.lux-gold-dust--rich {
+  opacity: 0.38;
+  background-image:
+    radial-gradient(circle, rgba(255, 252, 235, 0.95) 0.6px, transparent 1px),
+    radial-gradient(circle, rgba(212, 175, 55, 0.72) 0.9px, transparent 1.1px),
+    radial-gradient(circle, rgba(255, 220, 160, 0.55) 1.2px, transparent 1.6px);
+  background-size:
+    22px 22px,
+    38px 38px,
+    54px 54px;
+  background-position:
+    0 0,
+    13px 9px,
+    7px 21px;
+  animation: luxDustFlow 22s linear infinite, luxDustSpark 4.2s ease-in-out infinite;
+  filter: blur(0.2px);
+}
+
+@keyframes luxDustSpark {
+  0%,
+  100% {
+    opacity: 0.34;
+    filter: blur(0.2px) drop-shadow(0 0 8px rgba(212, 175, 55, 0.2));
+  }
+  50% {
+    opacity: 0.48;
+    filter: blur(0.2px) drop-shadow(0 0 22px rgba(255, 248, 210, 0.35));
+  }
+}
+
+/* 팔괘·단청 은은한 광채 */
+.lux-bagua-glow {
+  filter: drop-shadow(0 0 50px rgba(212, 175, 55, 0.12))
+    drop-shadow(0 0 90px rgba(43, 108, 176, 0.08));
+}
+
+.lux-dancheong-glow {
+  filter: drop-shadow(0 0 40px rgba(212, 175, 55, 0.1))
+    saturate(1.12);
+}
+
+/* 선녀 월아 모드 본문: 금빛 숨결 + 가루 (기존 클래스명 호환) */
+.lux-goddess-text,
+.lux-wola-text {
+  text-shadow:
+    0 0 18px rgba(212, 175, 55, 0.22),
+    0 0 42px rgba(255, 248, 220, 0.12),
+    0 0 2px rgba(255, 252, 235, 0.35);
+  animation: luxGoddessBreath 5.5s ease-in-out infinite;
+}
+
+.lux-goddess-text-aura,
+.lux-wola-text-aura {
+  background: radial-gradient(
+    ellipse 120% 80% at 50% 40%,
+    rgba(212, 175, 55, 0.14) 0%,
+    transparent 65%
+  );
+  animation: luxAuraDrift 8s ease-in-out infinite;
+  opacity: 0.85;
+}
+
+/* 리포트 코너 — 월아 실루엣(한복·비녀 이미지 활용) */
+.lux-wola-silhouette {
+  pointer-events: none;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: min(112px, 26vw);
+  height: min(168px, 32vw);
+  opacity: 0.18;
+  background: url("/goddess_the_answer.png") right top / contain no-repeat;
+  filter: saturate(1.05) contrast(1.08);
+}
+
+@keyframes luxGoddessBreath {
+  0%,
+  100% {
+    text-shadow:
+      0 0 16px rgba(212, 175, 55, 0.2),
+      0 0 36px rgba(255, 248, 220, 0.1),
+      0 0 2px rgba(255, 252, 235, 0.32);
+  }
+  45% {
+    text-shadow:
+      0 0 28px rgba(255, 240, 190, 0.38),
+      0 0 56px rgba(212, 175, 55, 0.22),
+      0 0 3px rgba(255, 252, 235, 0.5);
+  }
+}
+
+@keyframes luxAuraDrift {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateY(-4px) scale(1.02);
+    opacity: 1;
+  }
+}
+
+@keyframes luxDustFlow {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(40px);
+  }
+}
+
+.lux-line-draw {
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation: luxLineDraw 2.2s ease-out forwards;
+}
+
+@keyframes luxLineDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.lux-mini-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.lux-mini-key {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.lux-mini-val {
+  margin-top: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  color: rgba(255, 247, 202, 0.95);
+  text-shadow: 0 0 18px rgba(212, 175, 55, 0.3);
+}
+
+.lux-paywall-btn {
+  position: relative;
+  width: 100%;
+  min-height: 56px;
+  border-radius: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.7);
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.28),
+    rgba(43, 108, 176, 0.15) 50%,
+    rgba(197, 48, 48, 0.12)
+  );
+  color: rgba(255, 251, 230, 0.96);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.25),
+    0 0 28px rgba(212, 175, 55, 0.3),
+    0 0 64px rgba(212, 175, 55, 0.2);
+  animation: luxAuraPulse 2.2s ease-in-out infinite;
+}
+
+/** 무료 인생도감 — 유일한 결제 동선(골든 게이트) */
+.lux-golden-gate {
+  position: relative;
+  width: 100%;
+  min-height: 64px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 224, 130, 0.55);
+  background: linear-gradient(
+    145deg,
+    rgba(212, 175, 55, 0.38),
+    rgba(20, 28, 48, 0.92) 38%,
+    rgba(43, 108, 176, 0.18) 72%,
+    rgba(212, 175, 55, 0.22)
+  );
+  color: rgba(255, 251, 230, 0.98);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  padding: 14px 18px;
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.45),
+    0 0 36px rgba(212, 175, 55, 0.42),
+    0 0 96px rgba(212, 175, 55, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  animation: luxAuraPulse 2.4s ease-in-out infinite;
+}
+
+.lux-golden-gate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: radial-gradient(
+    circle at 30% 0%,
+    rgba(255, 248, 210, 0.22),
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+.lux-golden-gate:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 235, 180, 0.75);
+  box-shadow:
+    0 0 0 1px rgba(255, 235, 160, 0.55),
+    0 0 48px rgba(212, 175, 55, 0.55),
+    0 0 110px rgba(212, 175, 55, 0.35);
+}
+
+/** 상단 — 클릭 불가 정적 카드 (프리미엄 열람 정보) */
+.lux-premium-info-static {
+  position: relative;
+  width: 100%;
+  min-height: 64px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 224, 130, 0.42);
+  background: linear-gradient(
+    145deg,
+    rgba(212, 175, 55, 0.22),
+    rgba(20, 28, 48, 0.94) 40%,
+    rgba(43, 108, 176, 0.12) 72%,
+    rgba(212, 175, 55, 0.16)
+  );
+  color: rgba(255, 251, 230, 0.98);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  padding: 14px 18px;
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.28),
+    0 0 24px rgba(212, 175, 55, 0.18);
+  cursor: default;
+  user-select: none;
+  pointer-events: none;
+}
+
+.lux-premium-info-static::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: radial-gradient(
+    circle at 30% 0%,
+    rgba(255, 248, 210, 0.12),
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+/** 하단 결제 CTA — 골드 그라데이션 (하단 고정) */
+.lux-bottom-pay-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 155;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
+  background: linear-gradient(
+    to top,
+    rgba(2, 4, 11, 0.96) 0%,
+    rgba(2, 4, 11, 0.82) 55%,
+    transparent 100%
+  );
+}
+
+.lux-bottom-pay-cta__btn {
+  display: block;
+  width: 100%;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 224, 150, 0.55);
+  padding: 16px 20px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  text-align: center;
+  color: rgba(20, 12, 4, 0.96);
+  background: linear-gradient(
+    145deg,
+    #fff4c8 0%,
+    #e8c96a 22%,
+    #c9a227 48%,
+    #8b6914 78%,
+    #d4af37 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 235, 180, 0.35),
+    0 4px 28px rgba(212, 175, 55, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.lux-bottom-pay-cta__btn:hover {
+  filter: brightness(1.06);
+}
+
+.lux-bottom-pay-cta__btn:active {
+  transform: scale(0.99);
+}
+
+.lux-payment-modal-btn {
+  width: 100%;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: filter 0.15s ease;
+}
+
+.lux-payment-modal-btn:hover {
+  filter: brightness(1.08);
+}
+
+.lux-payment-modal-btn--toss {
+  color: #0b0f1a;
+  background: linear-gradient(180deg, #5b8cff 0%, #2e6bff 100%);
+  border-color: rgba(80, 130, 255, 0.5);
+}
+
+.lux-payment-modal-btn--kakao {
+  color: #191600;
+  background: linear-gradient(180deg, #ffe812 0%, #f5d000 100%);
+  border-color: rgba(230, 200, 0, 0.55);
+}
+
+/** 인생도감 로딩 — 단청 + 오행 순환 */
+.lux-atlas-loading-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.lux-atlas-loading-ornament {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.lux-atlas-loading-dancheong {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: url("/pattern_danchung.jpg") center / cover;
+  box-shadow:
+    inset 0 0 48px rgba(212, 175, 55, 0.35),
+    0 0 0 2px rgba(212, 175, 55, 0.38),
+    0 0 52px rgba(212, 175, 55, 0.32);
+  animation: luxDancheongSpin 26s linear infinite;
+  filter: brightness(0.7) saturate(1.12) contrast(1.06);
+}
+
+.lux-atlas-loading-dancheong::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(212, 175, 55, 0.22),
+    transparent 58%
+  );
+  pointer-events: none;
+}
+
+.lux-atlas-loading-glyph-stack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.lux-atlas-loading-glyph {
+  position: absolute;
+  font-size: 2.35rem;
+  font-weight: 600;
+  color: rgba(255, 245, 210, 0.92);
+  text-shadow:
+    0 0 26px rgba(212, 175, 55, 0.55),
+    0 0 2px rgba(0, 0, 0, 0.85);
+  opacity: 0;
+  animation: luxAtlasGlyphCycle 6.75s ease-in-out infinite;
+}
+
+@keyframes luxDancheongSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes luxAtlasGlyphCycle {
+  0%,
+  12% {
+    opacity: 0;
+    transform: scale(0.88);
+    filter: blur(4px);
+  }
+  18%,
+  34% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+  42%,
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+    filter: blur(3px);
+  }
+}
+
+.lux-atlas-loading-caption {
+  font-size: 0.7rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(212, 175, 55, 0.55);
+}
+
+@keyframes luxAuraPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.22),
+      0 0 22px rgba(212, 175, 55, 0.28),
+      0 0 58px rgba(212, 175, 55, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 235, 155, 0.5),
+      0 0 42px rgba(212, 175, 55, 0.55),
+      0 0 88px rgba(212, 175, 55, 0.3);
+  }
+}
+
+.lux-danchung-divider {
+  height: 14px;
+  margin: 14px 0 6px;
+  border-radius: 999px;
+  background-image:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(212, 175, 55, 0.62) 0deg 14deg,
+      rgba(43, 108, 176, 0.38) 14deg 28deg,
+      rgba(197, 48, 48, 0.32) 28deg 42deg,
+      rgba(212, 175, 55, 0.62) 42deg 56deg
+    );
+  background-size: 120px 120px;
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.25),
+    0 0 16px rgba(212, 175, 55, 0.22);
+  opacity: 0.72;
+}
+
+.lux-bagua-loader {
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(212, 175, 55, 0.88) 0deg 18deg,
+      rgba(5, 5, 5, 0) 18deg 36deg
+    );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.4),
+    0 0 38px rgba(212, 175, 55, 0.35),
+    0 0 92px rgba(43, 108, 176, 0.2);
+  animation: luxBaguaLoaderSpin 2.2s linear infinite;
+}
+
+.lux-bagua-core {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 248, 212, 0.98) 0%,
+    rgba(212, 175, 55, 0.9) 45%,
+    rgba(5, 5, 8, 0.8) 100%
+  );
+  box-shadow:
+    0 0 24px rgba(212, 175, 55, 0.42),
+    inset 0 0 14px rgba(255, 255, 255, 0.28);
+}
+
+@keyframes luxBaguaLoaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lux-reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+  .lux-mist-layer,
+  .lux-dancheong-kaleido-slow,
+  .lux-gold-shimmer,
+  .lux-btn--premium::after,
+  .lux-oriental-bagua,
+  .lux-oriental-kaleido,
+  .lux-gold-dust,
+  .lux-gold-dust--rich,
+  .lux-line-draw,
+  .lux-paywall-btn,
+  .lux-golden-gate,
+  .lux-bagua-loader,
+  .lux-atlas-loading-dancheong,
+  .lux-atlas-loading-glyph,
+  .lux-goddess-text,
+  .lux-goddess-text-aura,
+  .lux-wola-text,
+  .lux-wola-text-aura {
+    animation: none;
+  }
+}
+
