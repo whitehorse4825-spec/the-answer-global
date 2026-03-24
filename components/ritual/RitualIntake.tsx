@@ -10,6 +10,10 @@ import {
   eightDigitsToIso,
 } from "@/lib/birthDateDigits";
 import {
+  birthTimeFrom24h,
+  birthTimeTo24h,
+} from "@/lib/birthTimeTwelveHour";
+import {
   type RitualIntake,
   type RitualRelation,
   clearKakaoConsultBrowserData,
@@ -38,6 +42,8 @@ export default function RitualIntake({ locale }: Props) {
     () => eightDigitsToIso(birthDigits),
     [birthDigits],
   );
+
+  const birthTimeParts = useMemo(() => birthTimeFrom24h(birthTime), [birthTime]);
 
   useEffect(() => {
     queueMicrotask(() => setIsClient(true));
@@ -212,7 +218,9 @@ export default function RitualIntake({ locale }: Props) {
             </div>
 
             <div>
-              <span className="form-label-mudang">{t("birthTimeLabel")}</span>
+              <span className="form-label-mudang" id="ritual-birth-time-label">
+                {t("birthTimeLabel")}
+              </span>
               <label className="mt-2 flex items-center gap-2 text-sm text-white/80">
                 <input
                   type="checkbox"
@@ -222,12 +230,112 @@ export default function RitualIntake({ locale }: Props) {
                 {t("birthTimeUnknown")}
               </label>
               {!birthTimeUnknown ? (
-                <input
-                  type="time"
-                  value={birthTime}
-                  onChange={(e) => setBirthTime(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-[#FFF8E7]"
-                />
+                <div
+                  className="mt-2 space-y-2"
+                  role="group"
+                  aria-labelledby="ritual-birth-time-label"
+                  aria-describedby="birth-time-hint"
+                >
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setBirthTime(
+                          birthTimeTo24h(
+                            "AM",
+                            birthTimeParts.hour12,
+                            birthTimeParts.minute,
+                          ),
+                        )
+                      }
+                      className={`flex-1 rounded-xl border py-2.5 text-sm font-medium ${
+                        birthTimeParts.ampm === "AM"
+                          ? "border-danchung-gold/60 bg-danchung-gold/15 text-[#FFF8E7]"
+                          : "border-white/15 bg-black/30 text-white/85"
+                      }`}
+                    >
+                      {t("birthTimeAm")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setBirthTime(
+                          birthTimeTo24h(
+                            "PM",
+                            birthTimeParts.hour12,
+                            birthTimeParts.minute,
+                          ),
+                        )
+                      }
+                      className={`flex-1 rounded-xl border py-2.5 text-sm font-medium ${
+                        birthTimeParts.ampm === "PM"
+                          ? "border-danchung-gold/60 bg-danchung-gold/15 text-[#FFF8E7]"
+                          : "border-white/15 bg-black/30 text-white/85"
+                      }`}
+                    >
+                      {t("birthTimePm")}
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      aria-label={t("birthTimeLabel")}
+                      value={birthTimeParts.hour12}
+                      onChange={(e) => {
+                        const h12 = Number(e.target.value);
+                        setBirthTime(
+                          birthTimeTo24h(
+                            birthTimeParts.ampm,
+                            h12,
+                            birthTimeParts.minute,
+                          ),
+                        );
+                      }}
+                      className="min-w-[4.5rem] flex-1 rounded-xl border border-white/15 bg-black/40 px-3 py-2.5 text-sm text-[#FFF8E7] outline-none focus:border-danchung-gold/50 sm:flex-none"
+                    >
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-sm text-white/75">
+                      {t("birthTimeHourSuffix")}
+                    </span>
+                    <select
+                      aria-label={`${t("birthTimeLabel")} · ${t("birthTimeMinuteSuffix")}`}
+                      value={String(birthTimeParts.minute).padStart(2, "0")}
+                      onChange={(e) => {
+                        const min = Number(e.target.value);
+                        setBirthTime(
+                          birthTimeTo24h(
+                            birthTimeParts.ampm,
+                            birthTimeParts.hour12,
+                            min,
+                          ),
+                        );
+                      }}
+                      className="min-w-[4.5rem] flex-1 rounded-xl border border-white/15 bg-black/40 px-3 py-2.5 text-sm text-[#FFF8E7] outline-none focus:border-danchung-gold/50 sm:flex-none"
+                    >
+                      {Array.from({ length: 60 }, (_, i) => i).map((m) => (
+                        <option
+                          key={m}
+                          value={String(m).padStart(2, "0")}
+                        >
+                          {String(m).padStart(2, "0")}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-sm text-white/75">
+                      {t("birthTimeMinuteSuffix")}
+                    </span>
+                  </div>
+                  <p
+                    id="birth-time-hint"
+                    className="text-[0.7rem] leading-relaxed text-white/45"
+                  >
+                    {t("birthTimePickerHint")}
+                  </p>
+                </div>
               ) : null}
             </div>
 
