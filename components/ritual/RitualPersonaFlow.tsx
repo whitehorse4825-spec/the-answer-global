@@ -6,11 +6,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { koreanVocativeCall } from "@/lib/koreanVocative";
+import { shouldMarkRitualPaidFromSearchParams } from "@/lib/ritualPaymentUrl";
+import { readKakaoAnalysisDraft } from "@/lib/kakaoPayResumeDraft";
 import {
   isRitualPaid,
+  readFullPackagePortoneUnlocked,
+  readKakaoTargetDisplayName,
   readRitualIntake,
-  setRitualPaid,
 } from "@/lib/ritualStorage";
+
+import { PersonaAssistantBubbleContent } from "@/lib/personaReplyRichText";
 
 import RitualPayButton from "./RitualPayButton";
 import RitualShell from "./RitualShell";
@@ -32,6 +37,7 @@ export default function RitualPersonaFlow({ locale }: Props) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [userTurns, setUserTurns] = useState(0);
+  const [apiError, setApiError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   const userTurnsLeft = MAX_USER_TURNS - userTurns;
@@ -44,16 +50,13 @@ export default function RitualPersonaFlow({ locale }: Props) {
       return;
     }
     setCallName(koreanVocativeCall(intake.userName));
-    setPaid(isRitualPaid("persona"));
+    // 실제 결제 성공(또는 로컬 테스트) 시 `ritual:fullPackage:portoneUnlocked` 플래그로 즉시 해제
+    setPaid(isRitualPaid("persona") || readFullPackagePortoneUnlocked());
   }, [locale, router]);
 
   useEffect(() => {
     if (!isClient) return;
-    const ok =
-      searchParams.get("paymentSuccess") === "1" ||
-      searchParams.get("mock") === "1";
-    if (ok) {
-      setRitualPaid("persona", true);
+    if (shouldMarkRitualPaidFromSearchParams(searchParams)) {
       setPaid(true);
       router.replace(`/${locale}/ritual/persona`);
     }
@@ -69,10 +72,11 @@ export default function RitualPersonaFlow({ locale }: Props) {
     setInput("");
     const userMsg: Msg = { role: "user", text };
     setMessages((m) => [...m, userMsg]);
-    setUserTurns((n) => n + 1);
+    setApiError(null);
     setBusy(true);
     try {
       const intake = readRitualIntake();
+      const draft = readKakaoAnalysisDraft();
       const apiMsgs = [...messages, userMsg].map((x) => ({
         role: x.role === "user" ? ("user" as const) : ("assistant" as const),
         content: x.text,
@@ -84,15 +88,40 @@ export default function RitualPersonaFlow({ locale }: Props) {
           messages: apiMsgs,
           userName: intake?.userName,
           relation: intake?.relation,
+          targetName: readKakaoTargetDisplayName() || draft?.payload?.targetName,
+          selfBubbleColorHint: draft?.payload?.selfBubbleColorHint,
+          otherBubbleColorHint: draft?.payload?.otherBubbleColorHint,
+          stage1Excerpt: draft?.previewMd?.trim().slice(0, 8000),
+          maxUserTurns: MAX_USER_TURNS,
         }),
       });
-      const data = (await res.json()) as { reply?: string };
-      const reply = data.reply ?? "…응.";
-      setMessages((m) => [...m, { role: "other", text: reply }]);
+      const data = (await res.json()) as {
+        reply?: string;
+        error?: string;
+        message?: string;
+      };
+      if (!res.ok) {
+        setMessages((m) => m.slice(0, -1));
+        setInput(text);
+        setApiError(
+          typeof data.message === "string"
+            ? data.message
+            : data.error === "persona_chat_failed"
+              ? "신령님이 잠깐 막혔다. 잠시 후 다시 보내보거라."
+              : "점사를 불러오지 못했다. 서버 설정을 확인하거나 잠시 후 다시 보내보거라.",
+        );
+        return;
+      }
+      setUserTurns((n) => n + 1);
+      setMessages((m) => [...m, { role: "other", text: data.reply ?? "" }]);
+    } catch {
+      setMessages((m) => m.slice(0, -1));
+      setInput(text);
+      setApiError("네트워크가 꼬였다. 다시 보내보거라.");
     } finally {
       setBusy(false);
     }
-  }, [paid, userTurnsLeft, input, busy, messages]);
+  }, [paid, userTurnsLeft, busy, messages, input]);
 
   if (!isClient || !callName) {
     return (
@@ -105,7 +134,7 @@ export default function RitualPersonaFlow({ locale }: Props) {
   return (
     <RitualShell>
       <Link
-        href={`/${locale}/ritual/menu`}
+        href={`/${locale}/ritual/menu?stay=1`}
         className="mb-6 inline-block text-sm text-danchung-gold/75"
       >
         ← {t("backMenu")}
@@ -145,13 +174,17 @@ export default function RitualPersonaFlow({ locale }: Props) {
                 className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+                  className={`kakao-sns-bubble-text max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 leading-relaxed ${
                     m.role === "user"
                       ? "bg-[#fee500] text-[#1a1a1a]"
                       : "bg-white text-[#111]"
                   }`}
                 >
-                  {m.text}
+                  {m.role === "user" ? (
+                    m.text
+                  ) : (
+                    <PersonaAssistantBubbleContent text={m.text} />
+                  )}
                 </div>
               </div>
             ))}
@@ -165,6 +198,11 @@ export default function RitualPersonaFlow({ locale }: Props) {
             <div ref={endRef} />
           </div>
           <div className="border-t border-black/20 bg-[#f5f5f5] p-3">
+            {apiError ? (
+              <p className="mb-2 text-center text-[11px] font-medium text-red-700">
+                {apiError}
+              </p>
+            ) : null}
             <p className="mb-2 text-center text-[11px] text-black/50">
               {userTurnsLeft > 0
                 ? t("personaRemaining", { n: userTurnsLeft })
@@ -182,7 +220,7 @@ export default function RitualPersonaFlow({ locale }: Props) {
                   }
                 }}
                 placeholder={t("personaInputPlaceholder")}
-                className="min-h-10 flex-1 rounded-lg border border-black/10 bg-white px-3 text-sm text-black outline-none"
+                className="kakao-sns-bubble-text min-h-10 flex-1 rounded-lg border border-black/10 bg-white px-3 text-black outline-none"
               />
               <button
                 type="button"

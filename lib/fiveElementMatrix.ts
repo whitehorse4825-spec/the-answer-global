@@ -115,7 +115,7 @@ export function buildMatrixBlockKo(five: FiveElements): string {
     return `· ${lineForElementKo(k, p)}\n  ${explainKo(k, p)}`;
   });
   return (
-    `[월아의 오행 매트릭스 — lunar 계산 수치 그대로]\n` +
+    `[무녀의 오행 매트릭스 — lunar 계산 수치 그대로]\n` +
     `목 ${five.wood}% · 화 ${five.fire}% · 토 ${five.earth}% · 금 ${five.metal}% · 수 ${five.water}%\n\n` +
     `${lines.join("\n\n")}`
   );
@@ -143,7 +143,7 @@ export function buildMatrixOpeningKo(
     return (
       `${call}, 일단 이것부터. ${LABEL_KO[d]}은(는) ${five[d]}%로 결핍 쪽이고, ${LABEL_KO[e]}은(는) ${five[e]}%로 과다 쪽이야. ` +
       `결핍은 「${MATRIX_KO.deficiency[d]}」처럼 느껴지고, 과다는 「${MATRIX_KO.excess[e]}」로 네 발목을 잡을 수 있어. ` +
-      `아래 매트릭스를 한 줄씩만 따라와. 사람들은 ${k1} 같은 말로 너를 포장하지만, 월아는 숫자만 본다.`
+      `아래 매트릭스를 한 줄씩만 따라와. 사람들은 ${k1} 같은 말로 너를 포장하지만, 무녀는 숫자만 본다.`
     );
   }
   if (def.length) {

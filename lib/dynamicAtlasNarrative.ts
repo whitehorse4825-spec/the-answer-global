@@ -18,7 +18,6 @@ const LABEL_KO: Record<ElementKey, string> = {
 
 /** 1% 단위 뉘앙스 (구간을 촘촘히) */
 function nuanceKo(p: number): string {
-  const d = p - 20;
   if (p <= 4) return "거의 바닥이라 인생이 제자리를 못 잡는";
   if (p <= 9) return "심하게 부족해서 루틴이 안 붙는";
   if (p <= 14) return "아직 15% 밑이라 결핍에 가까운";

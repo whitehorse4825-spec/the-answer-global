@@ -73,7 +73,7 @@ export function pickPrescriptionTargets(five: FiveElements): Array<{
 
 type LineTriplet = { ko: string[]; en: string[]; ja: string[] };
 
-/** 한글 표시명 → 호격 (마지막 글자 받침 기준 아/야, 예: 김유선아 · 월아야) */
+/** 한글 표시명 → 호격 (마지막 글자 받침 기준 아/야, 예: 김유선아 · 무녀야) */
 function vocativeKo(displayName: string): string {
   const raw = displayName.replace(/\s+/g, "").trim();
   if (!raw) return "";
@@ -329,7 +329,7 @@ function buildOutro(tone: PrescriptionTone, mix: number): string {
       "\n이건 위로가 아니라 거울이야. 네 운명의 결은 이제 네 손에 있어.\n",
       "\n위로는 친구한테 가서 받아. 무녀는 인연줄과 길만 알려줄 뿐이야.\n",
       "\n거울 보듯이 읽어. 네가 피하면 안 되는 건, 지금 여기 적혀 있어.\n",
-      "\n위로는 휴지통에 넣고, 처방만 골라. 월아는 장난 안 쳐.\n",
+      "\n위로는 휴지통에 넣고, 처방만 골라. 무녀는 장난 안 쳐.\n",
     ];
     return lines[idx];
   }

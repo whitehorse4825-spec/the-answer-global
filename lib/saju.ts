@@ -171,7 +171,7 @@ function normalizeFive(
   const order: ElementKey[] = ["wood", "fire", "earth", "metal", "water"];
   const floats = order.map((k) => (boosted[k] / sum) * 100);
   const ints = floats.map((v) => Math.floor(v));
-  let diff = 100 - ints.reduce((a, b) => a + b, 0);
+  const diff = 100 - ints.reduce((a, b) => a + b, 0);
   // 나머지는 가장 큰 소수부부터 +1
   const frac = floats.map((v, i) => ({ i, f: v - Math.floor(v) }));
   frac.sort((a, b) => b.f - a.f);

@@ -17,8 +17,6 @@ function getPathRemainder(pathname: string) {
 }
 
 export default function LocaleSwitcher() {
-  if (LOCALES.length <= 1) return null;
-
   const router = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
@@ -27,10 +25,12 @@ export default function LocaleSwitcher() {
   const remainder = getPathRemainder(pathname);
 
   useEffect(() => {
-    setCurrentLanguage(locale);
+    queueMicrotask(() => setCurrentLanguage(locale));
   }, [locale]);
 
   const remainderToUse = useMemo(() => remainder, [remainder]);
+
+  if (LOCALES.length <= 1) return null;
 
   return (
     <div className="flex items-center gap-1 rounded-full border border-danchung-gold/25 bg-[#050505]/20 px-2 py-1 backdrop-blur-md">

@@ -1,7 +1,7 @@
 /**
  * 한국어 호격 조사: 이름 **마지막 글자** 받침 유무 → '아' / '야'
  * - 받침 있음 → 아 (예: 김유선 → 김유선아 — 마지막 글자 ‘선’에 받침 ㄴ)
- * - 받침 없음 → 야 (예: 월아 → 월아야)
+ * - 받침 없음 → 야 (예: 무녀 → 무녀야)
  */
 
 const HANGUL_BASE = 0xac00;
@@ -33,7 +33,7 @@ export function koreanVocativeParticle(name: string): "아" | "야" {
 }
 
 /**
- * "유선아", "월아야" 형태 — 부르는 호칭
+ * "유선아", "무녀야" 형태 — 부르는 호칭
  */
 export function koreanVocativeCall(name: string): string {
   const t = name.trim();

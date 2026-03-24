@@ -1,15 +1,48 @@
 import { NextResponse } from "next/server";
 
-import type { RitualRelation } from "@/lib/ritualStorage";
+import { generateTarotReunionReadingWithOpenAI } from "@/lib/openaiTarotReunionReading";
+import {
+  relationToTarotLabel,
+  type TarotReunionUserContext,
+} from "@/lib/tarotReunionReadingPrompt";
+import { getSeoulDateISO } from "@/lib/seoulDate";
+import { RITUAL_LLM_NOT_CONFIGURED_MESSAGE } from "@/lib/ritualLlmEnv";
+import {
+  normalizeRitualRelation,
+  type RitualRelation,
+} from "@/lib/ritualStorage";
+
+type Body = {
+  cards?: string[];
+  birthDate?: string;
+  birthTime?: string;
+  birthTimeUnknown?: boolean;
+  calendar?: "solar" | "lunar";
+  gender?: string;
+  relation?: RitualRelation;
+  userName?: string;
+  targetName?: string;
+  /** 1단계 analyze-chat @SIGNALS·병합 키워드 */
+  emotionKeywords?: string[];
+  /** 카톡 붙여넣기 일부 */
+  chatSnippet?: string;
+  /** 1단계 마크다운 간보기/리포트 발췌 */
+  stage1PreviewExcerpt?: string;
+  selfBubbleColorHint?: string;
+  otherBubbleColorHint?: string;
+  /** 1~28일 미리보기 캘린더 — 오늘 강조 일자 */
+  previewCalendarTodayDom?: number;
+  /** 불꽃(운명일) 일자 */
+  previewCalendarFateDay?: number;
+};
+
+const LLM_NOT_CONFIGURED_MSG =
+  "서버에 OPENAI_API_KEY가 설정되어 있지 않습니다. 배포 환경 변수를 확인하세요.";
 
 export async function POST(req: Request) {
-  let body: {
-    cards?: string[];
-    birthDate?: string;
-    relation?: RitualRelation;
-  };
+  let body: Body;
   try {
-    body = (await req.json()) as typeof body;
+    body = (await req.json()) as Body;
   } catch {
     return NextResponse.json({ error: "invalid json" }, { status: 400 });
   }
@@ -18,24 +51,64 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "need 3 cards" }, { status: 400 });
   }
 
-  const rel =
-    body.relation === "crush"
-      ? "짝사랑의 실"
-      : body.relation === "crisis"
-        ? "위기의 실타래"
-        : "재회를 바라는 실";
+  const r = normalizeRitualRelation(body.relation ?? "reunion_emergency");
+  const relationLabel = relationToTarotLabel(r);
+  const readingDateSeoul = getSeoulDateISO();
 
-  const reading = `${cards[0]} — 지금 네 인연의 뿌리다. 말보다 행동의 무게를 보라.
-${cards[1]} — 막히는 지점이다. 여기서 밀면 끊기고, 비우면 숨통이 트인다.
-${cards[2]} — 다가올 흐름의 문이다.
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) {
+    return NextResponse.json(
+      {
+        error: "llm_not_configured",
+        message: RITUAL_LLM_NOT_CONFIGURED_MESSAGE,
+      },
+      { status: 503 },
+    );
+  }
 
-【사주와 맞물린 타이밍】
-${body.birthDate ? `생년월일 ${body.birthDate}의 기운을 겹쳐 보니, 달이 기울기 전·해가 뉘엿뉘엿할 때 연락 채널이 열리기 쉽다.` : "생시를 알려주지 않아 대략의 달무리만 읽는다. 시간을 알려주면 더 좁혀지느니라."}
+  const model = process.env.OPENAI_MODEL?.trim();
+  const ctx: TarotReunionUserContext = {
+    cards: [cards[0], cards[1], cards[2]],
+    relationLabel,
+    relation: r,
+    readingDateSeoul,
+    userName: body.userName?.trim(),
+    targetName: body.targetName?.trim(),
+    selfBubbleColorHint: body.selfBubbleColorHint?.trim(),
+    otherBubbleColorHint: body.otherBubbleColorHint?.trim(),
+    birthDate: body.birthDate?.trim(),
+    birthTime: body.birthTime?.trim(),
+    birthTimeUnknown: body.birthTimeUnknown,
+    calendar: body.calendar,
+    gender: body.gender?.trim(),
+    emotionKeywords: body.emotionKeywords,
+    chatSnippet: body.chatSnippet?.trim(),
+    stage1PreviewExcerpt: body.stage1PreviewExcerpt?.trim(),
+    previewCalendarTodayDom:
+      typeof body.previewCalendarTodayDom === "number"
+        ? body.previewCalendarTodayDom
+        : undefined,
+    previewCalendarFateDay:
+      typeof body.previewCalendarFateDay === "number"
+        ? body.previewCalendarFateDay
+        : undefined,
+  };
 
-【${rel}에 대한 비방】
-첫 메시지는 변명 말고 '내 마음 한 줄'만 실어라. 상대가 문을 열면 그때부터 사과·설명을 한 숨에 쏟아도 늦지 않다. 세 장이 모두 말하는 건 한 가지—네가 먼저 숨을 고르고, 상대에게도 숨 쉴 틈을 주라는 것이다.
-
-※ 데모 해석입니다.`;
-
-  return NextResponse.json({ reading });
+  try {
+    const reading = await generateTarotReunionReadingWithOpenAI({
+      apiKey,
+      model,
+      context: ctx,
+    });
+    return NextResponse.json({ reading, mode: "llm" as const });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "llm_failed";
+    return NextResponse.json(
+      {
+        error: "tarot_reading_failed",
+        message,
+      },
+      { status: 502 },
+    );
+  }
 }

@@ -1,5 +1,4 @@
 import type { SajuProfile } from "./saju";
-import { koreanEulReul } from "./koreanVocative";
 import { buildWolaPrescription } from "./wolaPrescription";
 import {
   buildCurrentDaewoonLine,

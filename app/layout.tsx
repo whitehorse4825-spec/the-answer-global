@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Noto_Serif_JP, Nanum_Myeongjo } from "next/font/google";
+
 import "./globals.css";
 
 const fontEng = Cormorant_Garamond({
@@ -21,6 +22,12 @@ const fontJp = Noto_Serif_JP({
 export const metadata: Metadata = {
   title: "The Answer",
   description: "The Answer - Decode Your Destiny",
+};
+
+/** 모바일에서 레이아웃·텍스트 크기가 기기 너비에 맞게 잡히도록 */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

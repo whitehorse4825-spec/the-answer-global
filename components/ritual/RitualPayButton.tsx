@@ -1,16 +1,23 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { requestFullPackagePortonePayment } from "@/lib/portoneClient";
 import type { RitualProductId } from "@/lib/ritualStorage";
-import { RITUAL_PRICES } from "@/lib/ritualStorage";
-import { requestTossPayment } from "@/lib/tossPaymentClient";
+import {
+  RITUAL_PRICES,
+  readRitualIntake,
+  writeFullPackagePortoneUnlocked,
+} from "@/lib/ritualStorage";
 
 type Props = {
   locale: string;
   product: RitualProductId;
   label: string;
   orderName: string;
+  className?: string;
 };
 
 export default function RitualPayButton({
@@ -18,32 +25,57 @@ export default function RitualPayButton({
   product,
   label,
   orderName,
+  className = "",
 }: Props) {
+  void orderName;
+  const t = useTranslations("Ritual");
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const amount = RITUAL_PRICES[product];
-  const base = typeof window !== "undefined" ? window.location.origin : "";
   const path = `/${locale}/ritual/${product === "kakao" ? "kakao" : product === "tarot" ? "tarot" : "persona"}`;
+
+  const displayLabel = label.includes("{amount}")
+    ? label.replace("{amount}", amount.toLocaleString("ko-KR"))
+    : label;
 
   return (
     <button
       type="button"
       disabled={busy}
-      onClick={async () => {
+      onClick={() => {
+        if (busy) return;
         setBusy(true);
-        try {
-          await requestTossPayment({
-            product,
-            orderName,
-            successUrl: `${base}${path}?paymentSuccess=1`,
-            failUrl: `${base}${path}?paymentFail=1`,
-          });
-        } catch {
-          setBusy(false);
-        }
+        void (async () => {
+          try {
+            const intake = readRitualIntake();
+            const result = await requestFullPackagePortonePayment({
+              buyerName: intake?.userName?.trim() || "고객",
+            });
+            if (!result.ok) {
+              if (!result.cancelled) {
+                alert(result.message ?? t("roadmapPortonePayFail"));
+              }
+              return;
+            }
+            writeFullPackagePortoneUnlocked();
+            router.replace(path);
+          } catch (e) {
+            alert(
+              `${t("roadmapPortoneLoadError")}${e instanceof Error ? `\n${e.message}` : ""}`,
+            );
+          } finally {
+            setBusy(false);
+          }
+        })();
       }}
-      className="w-full rounded-2xl border border-danchung-gold/55 bg-gradient-to-b from-[#e8c96a]/35 to-[#6b4f0a]/40 py-4 text-sm font-black tracking-wide text-[#1a1204] shadow-[0_0_28px_rgba(212,175,55,0.35)] disabled:opacity-50"
+      className={[
+        "w-full rounded-2xl border border-danchung-gold/55 bg-gradient-to-b from-[#e8c96a]/35 to-[#6b4f0a]/40 py-4 text-sm font-black tracking-wide text-[#1a1204] shadow-[0_0_28px_rgba(212,175,55,0.35)] disabled:cursor-not-allowed disabled:opacity-45",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
-      {busy ? "…" : label.replace("{amount}", amount.toLocaleString("ko-KR"))}
+      {busy ? "…" : displayLabel}
     </button>
   );
 }

@@ -25,9 +25,9 @@ export function pickViralShareText(
   const idx = Math.abs(seed + 11) % 3;
   if (tone === "ko") {
     const tails = [
-      `월아 팩폭: ${spicy} 장난 아님 🌙`,
+      `무녀 팩폭: ${spicy} 장난 아님 🌙`,
       `${spicy} 미래 인연 얼굴은 유료라던데… 고민 중 💸`,
-      `토 ${five.earth}% 실화? ${spicy} #월아`,
+      `토 ${five.earth}% 실화? ${spicy} #무녀`,
     ];
     return tails[idx] ?? tails[0];
   }

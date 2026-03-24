@@ -1,11 +1,14 @@
 {
   "Landing": {
     "title": "Under moonlight, your record begins.",
+    "heroTagline": "",
+    "verticalHanja": "",
     "subtitle": "",
     "subtitlePrefix": "Your ",
     "subtitleDestiny": "destiny",
     "subtitleSuffix": ", a record only you can open.",
-    "button": "Wol-a’s Destiny Scan"
+    "button": "Wol-a’s Destiny Scan",
+    "footerNote": ""
   },
   "Archive": {
     "title": "Wol-a’s Destiny Scan — Input",
@@ -20,7 +23,12 @@
     "gender_female": "Female",
     "gender_male": "Male",
     "gender_other": "Other",
-    "submitLabel": "Wol-a’s Data Decoding",
+    "submitLabel": "Send destiny decoding",
+    "submitEyebrow": "Continue with the mudang’s thread decoding",
+    "submitFootnote": "The mudang’s inner chamber opens only through this button",
+    "birthDatePlaceholder": "e.g. 19900101",
+    "birthDateParsed": "Confirmed: {date}",
+    "birthDateIncomplete": "Enter 8 digits (YYYYMMDD).",
     "modeLabel": "Mode",
     "modeSelected": "{label} — selected.",
     "chip_lifetimeAtlas": "Lifetime Destiny Codex",

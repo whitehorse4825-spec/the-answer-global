@@ -7,13 +7,13 @@ export default function RitualShell({ children }: { children: ReactNode }) {
     <main className="relative min-h-screen bg-[#030306] text-white">
       <div aria-hidden className="absolute inset-0">
         <div
-          className="absolute inset-0 opacity-[0.22]"
+          className="absolute inset-0 opacity-[0.1]"
           style={{
             backgroundImage: `url(${HERO})`,
             backgroundRepeat: "no-repeat",
             backgroundSize: "contain",
             backgroundPosition: "center bottom",
-            filter: "blur(20px) saturate(1.05)",
+            filter: "blur(14px) saturate(1.05)",
           }}
         />
         <div className="lux-moonlight-overlay absolute inset-0" />

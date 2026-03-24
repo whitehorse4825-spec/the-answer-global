@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -38,14 +38,6 @@ type StoredDestiny = {
   ts?: number;
 };
 
-type FiveElements = {
-  wood: number;
-  fire: number;
-  earth: number;
-  metal: number;
-  water: number;
-};
-
 function clampString(s: unknown, fallback: string) {
   if (typeof s !== "string") return fallback;
   const v = s.trim();
@@ -65,7 +57,7 @@ function TypeReveal({
 }: {
   text: string;
   speed?: number;
-  /** 인생 도감: 달빛·금가루·월아 텍스트 연출 */
+  /** 인생 도감: 달빛·금가루·무녀 텍스트 연출 */
   wolaMode?: boolean;
 }) {
   const [shown, setShown] = useState("");
@@ -168,20 +160,26 @@ export default function LuxuryResult({ locale }: { locale: string }) {
   const [showBaguaLoading, setShowBaguaLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setStored(JSON.parse(raw) as StoredDestiny);
-    } catch {
-      /* ignore */
-    }
+    queueMicrotask(() => {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (raw) setStored(JSON.parse(raw) as StoredDestiny);
+      } catch {
+        /* ignore */
+      }
+    });
   }, []);
 
   useEffect(() => {
-    setIsPremium(syncPremiumFromUrl());
+    queueMicrotask(() => {
+      setIsPremium(syncPremiumFromUrl());
+    });
   }, []);
 
   useEffect(() => {
-    setIsClient(true);
+    queueMicrotask(() => {
+      setIsClient(true);
+    });
   }, []);
 
   const atlasTone = tone as AtlasNarrativeTone;

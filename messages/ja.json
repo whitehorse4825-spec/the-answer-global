@@ -1,11 +1,14 @@
 {
   "Landing": {
     "title": "月明かりの下、あなただけの記録が始まる。",
+    "heroTagline": "",
+    "verticalHanja": "",
     "subtitle": "",
     "subtitlePrefix": "あなたの ",
     "subtitleDestiny": "運命",
     "subtitleSuffix": "、ありふれていないデータの記録。",
-    "button": "月児ウォラの運命スキャン"
+    "button": "月児ウォラの運命スキャン",
+    "footerNote": ""
   },
   "Archive": {
     "title": "月児ウォラの運命スキャン · 入力",
@@ -20,7 +23,12 @@
     "gender_female": "女性",
     "gender_male": "男性",
     "gender_other": "その他",
-    "submitLabel": "ウォラのデータ解読",
+    "submitLabel": "解読を送る",
+    "submitEyebrow": "巫女（ムニョ）の縁の糸の解読を始める",
+    "submitFootnote": "巫女の奥の間は、このボタンだけで開きます",
+    "birthDatePlaceholder": "例: 19900101",
+    "birthDateParsed": "確認: {date}",
+    "birthDateIncomplete": "8桁の数字（YYYYMMDD）を入力してください。",
     "modeLabel": "モード",
     "modeSelected": "{label} — 選択されました。",
     "chip_lifetimeAtlas": "一生の運命図鑑",

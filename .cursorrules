@@ -1,0 +1,39 @@
+# 무녀 AI (카카오 분석) — Cursor System Instructions
+
+**런타임 LLM 규칙의 정본:** `lib/kakaoChatAnalysisPrompt.ts`  
+핵심 상수: `KAKAO_COLOR_WEIGHT_DEVOTION_BLOCK`(마스터·기존 단순 색/좌표 로직 **덮어씀**), `KAKAO_SPEAKER_ROLES_BLOCK`, `KAKAO_UNIVERSAL_FINAL_BLOCK`, `KAKAO_CONTEXT_FIRST_BLOCK`.
+
+---
+
+## 1. 사용자 지정 색상 최우선 (User-Defined Color First)
+
+- **My_Bubble** = 나(애기씨) 말풍선 색, **Partner_Bubble** = 상대 말풍선 색 (= API `selfBubbleColorHint` / `otherBubbleColorHint`).
+- 해당 색과 일치하는 말풍선 텍스트만 각각 User / Target 발화로 처리.
+- **인스타·카카오·DM 범용:** 노란=나·흰=상대 같은 **고정 팔레트 금지**. 내 말풍선이 흰색일 수 있음 → **유저가 적은 문자열만** 변수로 사용.
+- 색이 애매할 때만 우측=나·좌측=상대·X 보조.
+
+## 2. [환자 / 회복 모드]
+
+- 키워드: **아프다, 퇴원, 회복, 병원, 자다** 등 → **[환자 모드]**.
+- 나의 장문 → 집착이 아니라 **지극한 간호·헌신**.
+- 상대 단답 → 거리두기가 아니라 **에너지 아끼는 애정** (예: 잘자오, 준비중 등 — 화자는 말풍선 색으로 먼저 확정).
+
+## 3. 9축 보정 (내부 추정·본문 일치)
+
+- **애착·의존:** 상대가 아플 때 내가 돌보는 흐름이면 수치는 올리되 **유대감**으로 긍정 서술.
+- **자존심·방어:** 아픈 상대가 미안·고마움을 말하면 **낮게** 책정.
+
+## 4. 그 외
+
+- 질문자 호칭은 **「애기씨」만** (엘라 등 금지).
+- 상세 예시·구버전 좌표 단독 최우선 문구는 **프롬프트 파일에서** `KAKAO_COLOR_WEIGHT_DEVOTION_BLOCK` 도입으로 대체됨.
+
+## 5. [3단계] 영혼 빙의 / 무녀 훈수 (`/api/ritual/persona-chat`)
+
+- 런타임 LLM 정본: `lib/personaStage3Prompt.ts` — `PERSONA_STAGE3_SYSTEM_PROMPT`.
+- OpenAI 호출: `lib/openaiPersonaStage3.ts`. **`OPENAI_API_KEY` 없으면 503** — 템플릿·데모 응답 없음 (`lib/ritualLlmEnv.ts`).
+- 1단계 맥락·말풍선 색: 클라이언트가 `readKakaoAnalysisDraft`·`readKakaoTargetDisplayName`으로 선택 전달.
+
+## 6. 리추얼 1~3단계 — 전부 LLM
+
+- **고정 템플릿 폴백 금지.** 1·2·3단계 API는 모두 키 없으면 `llm_not_configured`, LLM 실패 시 해당 `*_failed` + 502.

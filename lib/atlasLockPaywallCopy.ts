@@ -29,7 +29,7 @@ export function getAtlasLockPaywallLines(
   tone: AtlasNarrativeTone,
   slot: AtlasLockSlot,
 ): AtlasLockLines {
-  if (tone === "ko") return linesKo(slot);
+  if (tone === "ko") return linesKo();
   if (tone === "en") return linesEn(slot);
   return linesJa(slot);
 }
@@ -40,7 +40,7 @@ const KO_LOCK_UNIFIED: AtlasLockLines = {
 };
 
 /** 재회 컨셉: 모든 자물쇠 멘트·가격 단일화 */
-function linesKo(_slot: AtlasLockSlot): AtlasLockLines {
+function linesKo(): AtlasLockLines {
   return KO_LOCK_UNIFIED;
 }
 

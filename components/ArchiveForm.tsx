@@ -4,6 +4,11 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  digitsOnlyBirth,
+  eightDigitsToIso,
+} from "@/lib/birthDateDigits";
+
 type Props = {
   locale: string;
   title: string;
@@ -35,7 +40,11 @@ export default function ArchiveForm({
 
   const [name, setName] = useState("");
   const [gender, setGender] = useState<string>(genderOptions[0]?.value ?? "");
-  const [birthDate, setBirthDate] = useState("");
+  const [birthDigits, setBirthDigits] = useState("");
+  const birthDateIso = useMemo(
+    () => eightDigitsToIso(birthDigits),
+    [birthDigits],
+  );
   const [birthTimeUnknown, setBirthTimeUnknown] = useState(true);
   const [birthTime, setBirthTime] = useState("");
 
@@ -163,13 +172,14 @@ export default function ArchiveForm({
           className="rounded-3xl border border-danchung-gold/25 bg-white/5 backdrop-blur-md shadow-[0_0_60px_rgba(0,0,0,0.35)] px-[clamp(16px,3.8vw,22px)] py-[clamp(18px,4.2vw,26px)]"
           onSubmit={(e) => {
             e.preventDefault();
+            if (!birthDateIso) return;
             try {
               window.localStorage.setItem(
                 "destiny:last",
                 JSON.stringify({
                   name,
                   gender,
-                  birthDate,
+                  birthDate: birthDateIso,
                   birthTimeUnknown,
                   birthTime,
                   mainCategory,
@@ -200,7 +210,7 @@ export default function ArchiveForm({
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-white/85">{nameLabel}</span>
+              <span className="form-label-mudang">{nameLabel}</span>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -210,7 +220,7 @@ export default function ArchiveForm({
             </label>
 
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-white/85">{genderLabel}</span>
+              <span className="form-label-mudang">{genderLabel}</span>
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
@@ -225,18 +235,33 @@ export default function ArchiveForm({
             </label>
 
             <label className="flex flex-col gap-2 sm:col-span-2">
-              <span className="text-sm font-semibold text-white/85">{birthDateLabel}</span>
+              <span className="form-label-mudang">{birthDateLabel}</span>
               <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                className="h-11 rounded-xl border border-white/10 bg-[#050505]/30 px-3 text-white outline-none focus:ring-2 focus:ring-danchung-gold/40"
+                type="text"
+                inputMode="numeric"
+                autoComplete="bday"
+                maxLength={8}
+                value={birthDigits}
+                onChange={(e) =>
+                  setBirthDigits(digitsOnlyBirth(e.target.value))
+                }
+                placeholder={t("birthDatePlaceholder")}
+                className="h-11 rounded-xl border border-white/10 bg-[#050505]/30 px-3 font-mono text-sm tracking-widest text-[#FFF8E7] outline-none placeholder:text-white/35 focus:ring-2 focus:ring-danchung-gold/40"
               />
+              {birthDateIso ? (
+                <span className="text-xs font-medium text-danchung-gold/90">
+                  {t("birthDateParsed", { date: birthDateIso })}
+                </span>
+              ) : birthDigits.length === 8 && !birthDateIso ? (
+                <span className="text-xs text-amber-200/85">
+                  {t("birthDateIncomplete")}
+                </span>
+              ) : null}
             </label>
 
             <div className="sm:col-span-2 flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-white/85">{birthTimeLabel}</span>
+                <span className="form-label-mudang">{birthTimeLabel}</span>
                 <button
                   type="button"
                   onClick={() => setBirthTimeUnknown((v) => !v)}
@@ -267,7 +292,7 @@ export default function ArchiveForm({
 
           {/* 카테고리 시스템 */}
           <div className="mt-8">
-            <div className="text-sm font-semibold text-white/85 mb-4 tracking-wide">
+            <div className="form-label-mudang mb-4">
               {t("categoryHeading")}
             </div>
 
@@ -491,12 +516,19 @@ export default function ArchiveForm({
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6 space-y-3">
+            <p className="text-center text-[0.8125rem] font-semibold tracking-wide text-[#FFF8E7] [text-shadow:0_1px_14px_rgba(0,0,0,0.85)]">
+              {t("submitEyebrow")}
+            </p>
             <button
               type="submit"
-              className="w-full h-12 rounded-2xl border border-danchung-gold/35 bg-[#050505]/25 backdrop-blur-md text-white/90 font-semibold shadow-[0_0_50px_rgba(0,0,0,0.22)] transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-danchung-gold/40"
+              disabled={!birthDateIso}
+              className="flex w-full min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-2xl border border-danchung-gold/35 bg-[#050505]/25 px-3 py-2.5 text-[#FFF8E7] shadow-[0_0_50px_rgba(0,0,0,0.22)] backdrop-blur-md transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-danchung-gold/40 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {submitLabel}
+              <span className="text-sm font-bold">{submitLabel}</span>
+              <span className="text-center text-[10px] font-medium leading-tight text-danchung-gold/90">
+                {t("submitFootnote")}
+              </span>
             </button>
           </div>
         </form>
