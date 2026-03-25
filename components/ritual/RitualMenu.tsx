@@ -7,12 +7,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { readKakaoAnalysisDraft } from "@/lib/kakaoPayResumeDraft";
 import { mergeEmotionKeywords } from "@/lib/kakaoReportSignals";
-import { requestFullPackagePortonePayment } from "@/lib/portoneClient";
+import { requestNicepayFullPackagePayment } from "@/lib/nicepayClient";
 import {
   FULL_PACKAGE_PRICE_WON,
   readFullPackagePortoneUnlocked,
   readRitualIntake,
-  writeFullPackagePortoneUnlocked,
 } from "@/lib/ritualStorage";
 
 import RitualShell from "./RitualShell";
@@ -43,8 +42,6 @@ export default function RitualMenu({ locale }: Props) {
   const step1Ref = useRef<HTMLLIElement>(null);
   const step2Ref = useRef<HTMLLIElement>(null);
   const step3Ref = useRef<HTMLLIElement>(null);
-  /** 모바일 리디렉션 복귀 시 URL 처리 1회 */
-  const portoneReturnHandledRef = useRef(false);
   const revealTimersRef = useRef<number[]>([]);
   const autoRedirectStartedRef = useRef(false);
 
@@ -81,25 +78,6 @@ export default function RitualMenu({ locale }: Props) {
       }
     });
   }, [locale, router]);
-
-  /** 포트원 모바일 리디렉션 복귀: ?paymentId=… (성공) — Promise로는 결과를 못 받는 흐름 */
-  useEffect(() => {
-    if (!isClient || typeof window === "undefined") return;
-    if (portoneReturnHandledRef.current) return;
-    if (readFullPackagePortoneUnlocked()) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const paymentId = params.get("paymentId");
-    const code = params.get("code");
-    if (!paymentId || code) return;
-    if (!paymentId.startsWith("fullpkg_")) return;
-
-    portoneReturnHandledRef.current = true;
-    writeFullPackagePortoneUnlocked();
-    setUnlocked(true);
-    window.history.replaceState({}, "", pathname);
-    alert(t("roadmapPortoneSuccessAlert"));
-  }, [isClient, pathname, t]);
 
   useEffect(() => {
     const el =
@@ -146,23 +124,23 @@ export default function RitualMenu({ locale }: Props) {
     startRevealAndRedirect();
   }, [isClient, unlocked, locale, stayOnMenu]);
 
-  const handlePortonePay = async () => {
+  const handleNicepayPay = async () => {
     if (payBusy || unlocked) return;
     if (activeStep !== 3) {
       alert(t("roadmapPayNeedStep3"));
       return;
     }
     setPayBusy(true);
+    let keepPayBusy = false;
     try {
-      const result = await requestFullPackagePortonePayment({
+      const result = await requestNicepayFullPackagePayment({
+        locale,
         buyerName: userFormalName,
+        redirectTarget: "menu",
       });
       if (result.ok) {
-        writeFullPackagePortoneUnlocked();
-        setUnlocked(true);
-        alert(t("roadmapPortoneSuccessAlert"));
-        // 결제 성공 후 1 → 2 → 3 순서 공개 후 persona로 이동
-        startRevealAndRedirect();
+        // 결제창 오픈 직후 — returnUrl 복귀 전까지 버튼은 로딩 유지(조용히 풀리지 않게)
+        keepPayBusy = true;
         return;
       }
       if (result.cancelled) {
@@ -179,7 +157,7 @@ export default function RitualMenu({ locale }: Props) {
         `${t("roadmapPortoneLoadError")}${e instanceof Error ? `\n${e.message}` : ""}`,
       );
     } finally {
-      setPayBusy(false);
+      if (!keepPayBusy) setPayBusy(false);
     }
   };
 
@@ -421,14 +399,14 @@ export default function RitualMenu({ locale }: Props) {
             <button
               type="button"
               disabled={payBusy}
-              onClick={() => void handlePortonePay()}
+              onClick={() => void handleNicepayPay()}
               className="kakao-pay-cta-black-gold flex w-full flex-col items-center justify-center gap-1 !min-h-[3.85rem] !rounded-xl !px-3 !py-3 !font-black !tracking-tight break-keep disabled:opacity-60"
             >
               <span className="whitespace-nowrap text-[clamp(15px,4.2vw,18px)] leading-tight">
                 {t("roadmapPortoneCta")}
               </span>
               <span className="text-[11px] font-semibold text-[#fceea8]/75">
-                {payBusy ? "…" : `카카오페이 통합결제 · ${amountStr}원`}
+                {payBusy ? "…" : t("roadmapPortonePaySub", { amount: amountStr })}
               </span>
             </button>
           )}

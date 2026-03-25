@@ -1,16 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { requestFullPackagePortonePayment } from "@/lib/portoneClient";
+import { requestNicepayFullPackagePayment } from "@/lib/nicepayClient";
 import type { RitualProductId } from "@/lib/ritualStorage";
-import {
-  RITUAL_PRICES,
-  readRitualIntake,
-  writeFullPackagePortoneUnlocked,
-} from "@/lib/ritualStorage";
+import { RITUAL_PRICES, readRitualIntake } from "@/lib/ritualStorage";
 
 type Props = {
   locale: string;
@@ -29,10 +24,14 @@ export default function RitualPayButton({
 }: Props) {
   void orderName;
   const t = useTranslations("Ritual");
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const amount = RITUAL_PRICES[product];
-  const path = `/${locale}/ritual/${product === "kakao" ? "kakao" : product === "tarot" ? "tarot" : "persona"}`;
+  const redirectTarget =
+    product === "kakao"
+      ? "kakao"
+      : product === "tarot"
+        ? "tarot"
+        : "persona";
 
   const displayLabel = label.includes("{amount}")
     ? label.replace("{amount}", amount.toLocaleString("ko-KR"))
@@ -46,10 +45,13 @@ export default function RitualPayButton({
         if (busy) return;
         setBusy(true);
         void (async () => {
+          let leaveBusy = false;
           try {
             const intake = readRitualIntake();
-            const result = await requestFullPackagePortonePayment({
+            const result = await requestNicepayFullPackagePayment({
+              locale,
               buyerName: intake?.userName?.trim() || "고객",
+              redirectTarget,
             });
             if (!result.ok) {
               if (!result.cancelled) {
@@ -57,14 +59,13 @@ export default function RitualPayButton({
               }
               return;
             }
-            writeFullPackagePortoneUnlocked();
-            router.replace(path);
+            leaveBusy = true;
           } catch (e) {
             alert(
               `${t("roadmapPortoneLoadError")}${e instanceof Error ? `\n${e.message}` : ""}`,
             );
           } finally {
-            setBusy(false);
+            if (!leaveBusy) setBusy(false);
           }
         })();
       }}
