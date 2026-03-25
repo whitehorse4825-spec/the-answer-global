@@ -136,7 +136,9 @@ export default function RitualMenu({ locale }: Props) {
       const result = await requestNicepayFullPackagePayment({
         locale,
         buyerName: userFormalName,
-        redirectTarget: "menu",
+        // 풀패키지는 결제 성공 후 바로 1단계(카카오 속마음)로 이동시키므로,
+        // 여기서는 카카오 단계로 가는 결제수단 세팅을 유도합니다.
+        redirectTarget: "kakao",
       });
       if (result.ok) {
         // 결제창 오픈 직후 — returnUrl 복귀 전까지 버튼은 로딩 유지(조용히 풀리지 않게)

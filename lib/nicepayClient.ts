@@ -16,6 +16,20 @@ function resolveNicepayRequestMethod(): string {
   );
 }
 
+function resolveNicepayPayMethodForRedirectTarget(
+  redirectTarget: NicepayFullPackageRedirectTarget,
+): string {
+  // Kakao 인증 페이지가 MONEY 타입에서 setEasyPayInfo null로 죽는 케이스가 있어
+  // 카카오 단계로 가는 결제는 기본값을 MONEY 대신 카드형으로 강제합니다.
+  if (redirectTarget === "kakao") {
+    return (
+      process.env.NEXT_PUBLIC_NICEPAY_KAKAOPAY_METHOD?.trim() ||
+      "kakaopayCard"
+    );
+  }
+  return resolveNicepayRequestMethod();
+}
+
 export type NicepayFullPackageRedirectTarget =
   | "menu"
   | "kakao"
@@ -146,7 +160,9 @@ export async function requestNicepayFullPackagePayment(
     opts.locale,
     opts.redirectTarget ?? "menu",
   );
-  const payMethod = resolveNicepayRequestMethod();
+  const payMethod = resolveNicepayPayMethodForRedirectTarget(
+    opts.redirectTarget ?? "menu",
+  );
 
   return await new Promise<RequestNicepayFullPackageResult>((resolve) => {
     let settled = false;
@@ -168,7 +184,6 @@ export async function requestNicepayFullPackagePayment(
         buyerTel: opts.buyerTel,
         buyerEmail: opts.buyerEmail,
         language: "KO",
-        mallReserved: `locale:${opts.locale}`,
         fnError: (err) => {
           const msg =
             typeof err?.errorMsg === "string" && err.errorMsg.trim()
