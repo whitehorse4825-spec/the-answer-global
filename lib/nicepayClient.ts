@@ -212,9 +212,5 @@ export async function requestNicepayFullPackagePayment(
       });
       return;
     }
-
-    queueMicrotask(() => {
-      finish({ ok: true });
-    });
   });
 }

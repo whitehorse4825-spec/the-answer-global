@@ -45,7 +45,6 @@ export default function RitualPayButton({
         if (busy) return;
         setBusy(true);
         void (async () => {
-          let leaveBusy = false;
           try {
             const intake = readRitualIntake();
             const result = await requestNicepayFullPackagePayment({
@@ -59,13 +58,12 @@ export default function RitualPayButton({
               }
               return;
             }
-            leaveBusy = true;
           } catch (e) {
             alert(
               `${t("roadmapPortoneLoadError")}${e instanceof Error ? `\n${e.message}` : ""}`,
             );
           } finally {
-            if (!leaveBusy) setBusy(false);
+            setBusy(false);
           }
         })();
       }}
