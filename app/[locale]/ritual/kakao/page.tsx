@@ -7,6 +7,7 @@ import { Suspense } from "react";
  */
 import RitualKakaoFlow from "@/components/ritual/RitualKakaoFlow";
 import RitualShell from "@/components/ritual/RitualShell";
+import ClientErrorBoundary from "@/components/ClientErrorBoundary";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -22,7 +23,9 @@ export default async function RitualKakaoPage({ params }: Props) {
   const { locale } = await params;
   return (
     <Suspense fallback={<KakaoFallback />}>
-      <RitualKakaoFlow locale={locale} />
+      <ClientErrorBoundary fallback={<KakaoFallback />}>
+        <RitualKakaoFlow locale={locale} />
+      </ClientErrorBoundary>
     </Suspense>
   );
 }
