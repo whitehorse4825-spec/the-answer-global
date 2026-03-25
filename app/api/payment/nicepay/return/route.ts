@@ -27,7 +27,9 @@ function resolveNicepayRedirect(locale: string, destRaw: string): string {
   if (d === "kakao" || d === "tarot" || d === "persona") {
     return `/${locale}/ritual/${d}`;
   }
-  return `/${locale}/ritual/menu?stay=1`;
+  // 풀패키지(메뉴의 결제 버튼) 완료 후에는 다음 단계로 바로 이동해야 함.
+  // `RitualMenu`는 ?stay=1이면 자동 리다이렉트를 막기 때문에 여기서는 stay를 쓰지 않음.
+  return `/${locale}/ritual/kakao`;
 }
 
 function htmlSuccess(redirectPath: string): Response {
