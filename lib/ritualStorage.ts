@@ -122,66 +122,10 @@ export const FULL_PACKAGE_PRICE_WON = 50_000;
 export const RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY =
   "ritual:fullPackage:portoneUnlocked";
 
-/**
- * 풀패키지 unlock — `sessionStorage` 대신 쿠키로 영속 유지.
- * - 새로고침/새 탭에서도 unlock이 유지되도록(플랫폼 기본 UX)
- * - 서버 주문 검증 기반(진짜 1번)까지 하려면 유저 식별/DB 연동이 추가로 필요
- */
-export const RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME =
-  "ritual_fullPackage_portoneUnlocked";
-
-/** 풀패키지 unlock이 “어떤 intake(선택)” 기준인지 판정하는 키 */
-export const RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY =
-  "ritual:fullPackage:unlockForIntake";
-
-function getCurrentRitualIntakeUnlockId(): string | null {
-  if (typeof window === "undefined") return null;
-  const intake = readRitualIntake();
-  // intake이 갱신될 때 updatedAt이 바뀌므로 이를 기준으로 비교합니다.
-  return intake?.updatedAt ? String(intake.updatedAt) : null;
-}
-
 export function readFullPackagePortoneUnlocked(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    // 레거시(sessionStorage) 우선
-    const legacy = window.sessionStorage.getItem(
-      RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY,
-    );
-    const legacyUnlocked = legacy === "1";
-
-    // 현재(쿠키) 플래그
-    const cookie = window.document.cookie || "";
-    const found = cookie
-      .split(";")
-      .map((x) => x.trim())
-      .find((x) =>
-        x.startsWith(
-          `${RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME}=`,
-        ),
-      );
-    const cookieUnlocked = found
-      ? found.endsWith("=1") || found.endsWith("=true")
-      : false;
-    const unlocked = legacyUnlocked || cookieUnlocked;
-    if (!unlocked) return false;
-
-    // intake 기준 매칭(플랫폼 UX: 새로 선택하면 다시 결제 가능)
-    const curUnlockId = getCurrentRitualIntakeUnlockId();
-    if (!curUnlockId) return true;
-
-    const storedId = window.localStorage.getItem(
-      RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY,
-    );
-    if (!storedId) {
-      // 첫 해제(결제 직후)에는 저장값이 없을 수 있어 intake 기준으로 세팅합니다.
-      window.localStorage.setItem(
-        RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY,
-        curUnlockId,
-      );
-      return true;
-    }
-    return storedId === curUnlockId;
+    return window.sessionStorage.getItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY) === "1";
   } catch {
     return false;
   }
@@ -190,24 +134,9 @@ export function readFullPackagePortoneUnlocked(): boolean {
 export function writeFullPackagePortoneUnlocked(): void {
   if (typeof window === "undefined") return;
   try {
-    // 레거시(sessionStorage) 세팅
+    // 결제 상태는 브라우저 세션 동안만 유지(영구 저장 금지).
     window.sessionStorage.setItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY, "1");
-
-    // 쿠키로 영속 유지(사용자 UX 개선)
-    // 1년 보관. 실제 결제 상태 서버 검증까지 하려면 추가 DB 연동이 필요.
-    const maxAgeSeconds = 60 * 60 * 24 * 365;
-    window.document.cookie = `${RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME}=1; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax`;
-
     window.localStorage.removeItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY);
-
-    // 현재 intake 기준으로 unlock이 유효한 범위를 고정
-    const curUnlockId = getCurrentRitualIntakeUnlockId();
-    if (curUnlockId) {
-      window.localStorage.setItem(
-        RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY,
-        curUnlockId,
-      );
-    }
   } catch {
     /* noop */
   }
@@ -227,9 +156,6 @@ export function clearAllRitualBrowserDataForDev(): void {
   clearKakaoConsultBrowserData();
   try {
     window.sessionStorage.removeItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY);
-    window.localStorage.removeItem(RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY);
-    // 쿠키 초기화(개발/비상용)
-    window.document.cookie = `${RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME}=; Max-Age=0; Path=/; SameSite=Lax`;
     window.localStorage.removeItem(RITUAL_INTAKE_KEY);
     window.localStorage.removeItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY);
     const keys = Object.keys(window.localStorage);

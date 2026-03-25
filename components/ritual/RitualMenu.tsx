@@ -131,31 +131,33 @@ export default function RitualMenu({ locale }: Props) {
       return;
     }
     setPayBusy(true);
+    let keepPayBusy = false;
     try {
       const result = await requestNicepayFullPackagePayment({
         locale,
         buyerName: userFormalName,
-        // 풀패키지는 결제 성공 후 바로 1단계(카카오 속마음)로 이동시키므로,
-        // 여기서는 카카오 단계로 가는 결제수단 세팅을 유도합니다.
-        redirectTarget: "kakao",
+        redirectTarget: "menu",
       });
-      if (!result.ok) {
-        if (result.cancelled) {
-          alert(
-            `${t("roadmapPortoneCancelled")}${result.message ? `\n${result.message}` : ""}`,
-          );
-          return;
-        }
-        alert(
-          `${t("roadmapPortonePayFail")}${result.message ? `\n${result.message}` : ""}`,
-        );
+      if (result.ok) {
+        // 결제창 오픈 직후 — returnUrl 복귀 전까지 버튼은 로딩 유지(조용히 풀리지 않게)
+        keepPayBusy = true;
+        return;
       }
+      if (result.cancelled) {
+        alert(
+          `${t("roadmapPortoneCancelled")}${result.message ? `\n${result.message}` : ""}`,
+        );
+        return;
+      }
+      alert(
+        `${t("roadmapPortonePayFail")}${result.message ? `\n${result.message}` : ""}`,
+      );
     } catch (e) {
       alert(
         `${t("roadmapPortoneLoadError")}${e instanceof Error ? `\n${e.message}` : ""}`,
       );
     } finally {
-      setPayBusy(false);
+      if (!keepPayBusy) setPayBusy(false);
     }
   };
 

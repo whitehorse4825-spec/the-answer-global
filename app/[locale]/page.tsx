@@ -1,6 +1,5 @@
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import ArchiveButton from "@/components/ArchiveButton";
-import LegalFooter from "@/components/LegalFooter";
 
 import { Noto_Sans_KR, Song_Myung } from "next/font/google";
 import { getTranslations } from "next-intl/server";
@@ -238,9 +237,6 @@ export default async function LandingPage({ params }: Props) {
               {footerNote}
             </p>
           ) : null}
-          <div className="w-full pt-2">
-            <LegalFooter />
-          </div>
         </div>
       </div>
     </main>

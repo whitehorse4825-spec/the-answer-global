@@ -6,28 +6,14 @@ import { FULL_PACKAGE_PRICE_WON } from "@/lib/ritualStorage";
 export const RITUAL_FULL_PACKAGE_GOODS_NAME = "인연 종결 풀패키지";
 
 /**
- * 결제창 method — 기본 `cardAndEasyPay`(카드+카카오·네이버 등 간편결제 탭).
- * 나이스 관리자에서 간편결제 미계약이면 해당 버튼이 안 뜰 수 있음 — 그때만 env로 `card`.
+ * 통합결제창 기본값 `cardAndEasyPay`(카드+간편결제).
+ * 카드 단독만 필요할 때만 `NEXT_PUBLIC_NICEPAY_PAY_METHOD=card` (구 REQUEST_METHOD는 읽지 않음 — 실수로 card 박혀도 통합 유지)
  * @see 나이스 매뉴얼 payment-window-server.md
  */
 function resolveNicepayRequestMethod(): string {
-  return (
-    process.env.NEXT_PUBLIC_NICEPAY_REQUEST_METHOD?.trim() || "cardAndEasyPay"
-  );
-}
-
-function resolveNicepayPayMethodForRedirectTarget(
-  redirectTarget: NicepayFullPackageRedirectTarget,
-): string {
-  // Kakao 인증 페이지가 MONEY 타입에서 setEasyPayInfo null로 죽는 케이스가 있어
-  // 카카오 단계로 가는 결제는 기본값을 MONEY 대신 카드형으로 강제합니다.
-  if (redirectTarget === "kakao") {
-    return (
-      process.env.NEXT_PUBLIC_NICEPAY_KAKAOPAY_METHOD?.trim() ||
-      "kakaopayCard"
-    );
-  }
-  return resolveNicepayRequestMethod();
+  const v = process.env.NEXT_PUBLIC_NICEPAY_PAY_METHOD?.trim();
+  if (!v) return "cardAndEasyPay";
+  return v;
 }
 
 export type NicepayFullPackageRedirectTarget =
@@ -160,9 +146,7 @@ export async function requestNicepayFullPackagePayment(
     opts.locale,
     opts.redirectTarget ?? "menu",
   );
-  const payMethod = resolveNicepayPayMethodForRedirectTarget(
-    opts.redirectTarget ?? "menu",
-  );
+  const payMethod = resolveNicepayRequestMethod();
 
   return await new Promise<RequestNicepayFullPackageResult>((resolve) => {
     let settled = false;
@@ -173,16 +157,6 @@ export async function requestNicepayFullPackagePayment(
     };
 
     try {
-      // 민감정보(clientId/secret 제외) 없이, 현재 method/returnUrl이 올바른지 확인용
-      if (typeof console !== "undefined" && typeof console.debug === "function") {
-        // eslint-disable-next-line no-console
-        console.debug("[Nicepay] requestPay", {
-          redirectTarget: opts.redirectTarget ?? "menu",
-          method: payMethod,
-          returnUrl,
-        });
-      }
-
       AUTHNICE.requestPay({
         clientId,
         method: payMethod,
@@ -194,6 +168,7 @@ export async function requestNicepayFullPackagePayment(
         buyerTel: opts.buyerTel,
         buyerEmail: opts.buyerEmail,
         language: "KO",
+        mallReserved: `locale:${opts.locale}`,
         fnError: (err) => {
           const msg =
             typeof err?.errorMsg === "string" && err.errorMsg.trim()
@@ -212,5 +187,9 @@ export async function requestNicepayFullPackagePayment(
       });
       return;
     }
+
+    queueMicrotask(() => {
+      finish({ ok: true });
+    });
   });
 }
