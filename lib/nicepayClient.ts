@@ -173,6 +173,16 @@ export async function requestNicepayFullPackagePayment(
     };
 
     try {
+      // 민감정보(clientId/secret 제외) 없이, 현재 method/returnUrl이 올바른지 확인용
+      if (typeof console !== "undefined" && typeof console.debug === "function") {
+        // eslint-disable-next-line no-console
+        console.debug("[Nicepay] requestPay", {
+          redirectTarget: opts.redirectTarget ?? "menu",
+          method: payMethod,
+          returnUrl,
+        });
+      }
+
       AUTHNICE.requestPay({
         clientId,
         method: payMethod,
