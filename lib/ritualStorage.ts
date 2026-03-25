@@ -130,6 +130,17 @@ export const RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY =
 export const RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME =
   "ritual_fullPackage_portoneUnlocked";
 
+/** 풀패키지 unlock이 “어떤 intake(선택)” 기준인지 판정하는 키 */
+export const RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY =
+  "ritual:fullPackage:unlockForIntake";
+
+function getCurrentRitualIntakeUnlockId(): string | null {
+  if (typeof window === "undefined") return null;
+  const intake = readRitualIntake();
+  // intake이 갱신될 때 updatedAt이 바뀌므로 이를 기준으로 비교합니다.
+  return intake?.updatedAt ? String(intake.updatedAt) : null;
+}
+
 export function readFullPackagePortoneUnlocked(): boolean {
   if (typeof window === "undefined") return false;
   try {
@@ -144,9 +155,32 @@ export function readFullPackagePortoneUnlocked(): boolean {
     const found = cookie
       .split(";")
       .map((x) => x.trim())
-      .find((x) => x.startsWith(`${RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME}=`));
+      .find((x) =>
+        x.startsWith(
+          `${RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME}=`,
+        ),
+      );
     if (!found) return false;
-    return found.endsWith("=1") || found.endsWith("=true");
+
+    const unlocked = found.endsWith("=1") || found.endsWith("=true");
+    if (!unlocked) return false;
+
+    // intake 기준 매칭(플랫폼 UX: 새로 선택하면 다시 결제 가능)
+    const curUnlockId = getCurrentRitualIntakeUnlockId();
+    if (!curUnlockId) return true;
+
+    const storedId = window.localStorage.getItem(
+      RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY,
+    );
+    if (!storedId) {
+      // 첫 해제(결제 직후)에는 저장값이 없을 수 있어 intake 기준으로 세팅합니다.
+      window.localStorage.setItem(
+        RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY,
+        curUnlockId,
+      );
+      return true;
+    }
+    return storedId === curUnlockId;
   } catch {
     return false;
   }
@@ -164,6 +198,15 @@ export function writeFullPackagePortoneUnlocked(): void {
     window.document.cookie = `${RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME}=1; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax`;
 
     window.localStorage.removeItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY);
+
+    // 현재 intake 기준으로 unlock이 유효한 범위를 고정
+    const curUnlockId = getCurrentRitualIntakeUnlockId();
+    if (curUnlockId) {
+      window.localStorage.setItem(
+        RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY,
+        curUnlockId,
+      );
+    }
   } catch {
     /* noop */
   }
@@ -183,6 +226,7 @@ export function clearAllRitualBrowserDataForDev(): void {
   clearKakaoConsultBrowserData();
   try {
     window.sessionStorage.removeItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY);
+    window.localStorage.removeItem(RITUAL_FULL_PACKAGE_UNLOCK_FOR_INTAKE_KEY);
     // 쿠키 초기화(개발/비상용)
     window.document.cookie = `${RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME}=; Max-Age=0; Path=/; SameSite=Lax`;
     window.localStorage.removeItem(RITUAL_INTAKE_KEY);

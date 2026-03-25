@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import LegalFooter from "@/components/LegalFooter";
+
 const HERO = "/goddess_the_answer.png";
 
 export default function RitualShell({ children }: { children: ReactNode }) {
@@ -26,8 +28,11 @@ export default function RitualShell({ children }: { children: ReactNode }) {
           }}
         />
       </div>
-      <div className="relative z-10 mx-auto w-full max-w-lg px-5 pb-28 pt-14">
+      <div className="relative z-10 mx-auto w-full max-w-lg px-5 pb-36 pt-14">
         {children}
+        <div className="mt-10">
+          <LegalFooter />
+        </div>
       </div>
     </main>
   );
