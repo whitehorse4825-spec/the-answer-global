@@ -8,6 +8,7 @@ import {
 import { routing } from "@/i18n/routing";
 import {
   RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY,
+  RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME,
   FULL_PACKAGE_PRICE_WON,
 } from "@/lib/ritualStorage";
 
@@ -34,7 +35,12 @@ function resolveNicepayRedirect(locale: string, destRaw: string): string {
 
 function htmlSuccess(redirectPath: string): Response {
   const keyJson = JSON.stringify(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY);
+  const cookieNameJson = JSON.stringify(
+    RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME,
+  );
   const pathJson = JSON.stringify(redirectPath);
+  const maxAgeSeconds = 60 * 60 * 24 * 365;
+  const setCookie = `${RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME}=1; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax`;
   const body = `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -46,8 +52,10 @@ function htmlSuccess(redirectPath: string): Response {
 <script>
 (function(){
   var k=${keyJson};
+  var cookieName=${cookieNameJson};
   var path=${pathJson};
   try { sessionStorage.setItem(k, "1"); } catch (e) {}
+  try { document.cookie = cookieName + "=1; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax"; } catch (e) {}
   location.replace(path);
 })();
 </script>
@@ -56,7 +64,10 @@ function htmlSuccess(redirectPath: string): Response {
 </html>`;
   return new Response(body, {
     status: 200,
-    headers: { "Content-Type": "text/html; charset=utf-8" },
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Set-Cookie": setCookie,
+    },
   });
 }
 
