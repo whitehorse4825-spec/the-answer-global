@@ -148,7 +148,7 @@ export function readFullPackagePortoneUnlocked(): boolean {
     const legacy = window.sessionStorage.getItem(
       RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY,
     );
-    if (legacy === "1") return true;
+    const legacyUnlocked = legacy === "1";
 
     // 현재(쿠키) 플래그
     const cookie = window.document.cookie || "";
@@ -160,9 +160,10 @@ export function readFullPackagePortoneUnlocked(): boolean {
           `${RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_COOKIE_NAME}=`,
         ),
       );
-    if (!found) return false;
-
-    const unlocked = found.endsWith("=1") || found.endsWith("=true");
+    const cookieUnlocked = found
+      ? found.endsWith("=1") || found.endsWith("=true")
+      : false;
+    const unlocked = legacyUnlocked || cookieUnlocked;
     if (!unlocked) return false;
 
     // intake 기준 매칭(플랫폼 UX: 새로 선택하면 다시 결제 가능)
