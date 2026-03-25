@@ -1,5 +1,6 @@
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import ArchiveButton from "@/components/ArchiveButton";
+import RitualUnlockResetOnLanding from "@/components/RitualUnlockResetOnLanding";
 
 import { Noto_Sans_KR, Song_Myung } from "next/font/google";
 import { getTranslations } from "next-intl/server";
@@ -72,6 +73,7 @@ export default async function LandingPage({ params }: Props) {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#050505] text-white">
+      <RitualUnlockResetOnLanding />
       {/* Background: contain, non-stretched (mobile-optimized) */}
       <div
         aria-hidden="true"

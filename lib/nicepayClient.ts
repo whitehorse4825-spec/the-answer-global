@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * 나이스페이 **Server 승인 모델 + JS SDK** (`AUTHNICE.requestPay`).
+ * 구형 ActiveX/MID·Amt hidden form 연동은 사용하지 않으며, 폼 input 전수 점검 대상도 아님.
+ * @see https://github.com/nicepayments/nicepay-manual/blob/main/api/payment-window-server.md
+ */
 import { resolveNicepaySdkUrl } from "@/lib/nicepayEndpoints";
 import { FULL_PACKAGE_PRICE_WON } from "@/lib/ritualStorage";
 
@@ -41,14 +46,57 @@ function getClientId(): string | null {
   return id || null;
 }
 
+/**
+ * PG·가맹점 관리자에 등록한 **공개 도메인**과 returnUrl origin을 맞출 때 사용.
+ * (예: 항상 `https://www.example.com` 으로만 받도록.)
+ * 비우면 `window.location.origin` 사용.
+ */
+function resolveNicepayReturnOrigin(): string | null {
+  const raw =
+    process.env.NEXT_PUBLIC_NICEPAY_RETURN_ORIGIN?.trim() ||
+    process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!raw) return null;
+  try {
+    const normalized = raw.replace(/\/+$/, "");
+    const hasScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(normalized);
+    const withScheme = hasScheme
+      ? normalized
+      : normalized.startsWith("localhost") ||
+          /^127(\.\d{1,3}){3}(:\d+)?$/.test(normalized)
+        ? `http://${normalized}`
+        : `https://${normalized}`;
+    const u = new URL(withScheme);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    return u.origin;
+  } catch {
+    return null;
+  }
+}
+
+function validateReturnUrl(returnUrl: string): string | null {
+  try {
+    const u = new URL(returnUrl);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    if (!u.hostname) return null;
+    const path = u.pathname.replace(/\/$/, "") || "/";
+    if (!path.endsWith("/api/payment/nicepay/return")) return null;
+    if (!u.searchParams.get("locale")?.trim()) return null;
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
+
 export function buildNicepayReturnUrl(
   locale: string,
   dest: NicepayFullPackageRedirectTarget = "menu",
 ): string {
+  const envOrigin = typeof window !== "undefined" ? resolveNicepayReturnOrigin() : null;
   const origin =
-    typeof window !== "undefined" && window.location?.origin
+    envOrigin ||
+    (typeof window !== "undefined" && window.location?.origin
       ? window.location.origin
-      : "";
+      : "");
   const u = new URL("/api/payment/nicepay/return", origin || "http://localhost");
   u.searchParams.set("locale", locale);
   if (dest !== "menu") u.searchParams.set("dest", dest);
@@ -108,12 +156,35 @@ function loadNicepayScriptOnce(sdkFolderUrl: string): Promise<void> {
 }
 
 /**
+ * 결제 버튼 직전에 호출해 두면 첫 클릭 시 `await` 구간이 짧아져
+ * 팝업/통합창이 사용자 제스처로 인식될 가능성이 높아집니다.
+ */
+export function prefetchNicepaySdk(): void {
+  if (typeof window === "undefined" || window.self !== window.top) return;
+  const clientId = getClientId();
+  if (!clientId) return;
+  const sdkUrl = resolveNicepaySdkUrl(
+    clientId,
+    process.env.NEXT_PUBLIC_NICEPAY_SDK_BASE?.trim(),
+  );
+  void loadNicepayScriptOnce(sdkUrl).catch(() => {});
+}
+
+/**
  * 인연 종결 풀패키지 — 나이스페이 Start(결제창) 후 returnUrl POST → 서버 승인.
  * 성공 시 전체 페이지가 return으로 이동하므로 Promise는 창 오픈 직전까지만 반환.
  */
 export async function requestNicepayFullPackagePayment(
   opts: RequestNicepayFullPackageOptions,
 ): Promise<RequestNicepayFullPackageResult> {
+  if (typeof window !== "undefined" && window.self !== window.top) {
+    return {
+      ok: false,
+      message:
+        "결제는 페이지가 최상위 창에서 열려 있어야 합니다. Cursor/미리보기·인앱 브라우저·iframe이면 카카오 인증 단계에서 오류가 날 수 있습니다. Chrome·Edge·Safari에서 localhost 또는 배포 URL을 직접 여세요.",
+    };
+  }
+
   const clientId = getClientId();
   if (!clientId) {
     return {
@@ -146,8 +217,18 @@ export async function requestNicepayFullPackagePayment(
     opts.locale,
     opts.redirectTarget ?? "menu",
   );
+  const returnUrlOk = validateReturnUrl(returnUrl);
+  if (!returnUrlOk) {
+    return {
+      ok: false,
+      message:
+        "결제 return URL이 올바르지 않습니다. NEXT_PUBLIC_NICEPAY_RETURN_ORIGIN(또는 SITE_URL)과 접속 도메인을 PG 등록 도메인과 맞추고, locale이 빠지지 않았는지 확인해 주세요.",
+    };
+  }
+
   const payMethod = resolveNicepayRequestMethod();
 
+  /** rAF/추가 await 없이 바로 호출 — 사용자 클릭과 같은 태스크에 최대한 가깝게 두어 통합창 차단을 줄임 */
   return await new Promise<RequestNicepayFullPackageResult>((resolve) => {
     let settled = false;
     const finish = (r: RequestNicepayFullPackageResult) => {
@@ -163,12 +244,14 @@ export async function requestNicepayFullPackagePayment(
         orderId,
         amount: FULL_PACKAGE_PRICE_WON,
         goodsName: RITUAL_FULL_PACKAGE_GOODS_NAME,
-        returnUrl,
+        returnUrl: returnUrlOk,
         buyerName: opts.buyerName,
         buyerTel: opts.buyerTel,
         buyerEmail: opts.buyerEmail,
         language: "KO",
+        returnCharSet: "utf-8",
         mallReserved: `locale:${opts.locale}`,
+        zIdxHigher: true,
         fnError: (err) => {
           const msg =
             typeof err?.errorMsg === "string" && err.errorMsg.trim()

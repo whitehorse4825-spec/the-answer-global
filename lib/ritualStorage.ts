@@ -105,15 +105,15 @@ export function writeKakaoTargetDisplayName(name: string): void {
   else window.localStorage.removeItem(RITUAL_KAKAO_TARGET_NAME_KEY);
 }
 
-/** 기획 단일가: 인연 종결 풀패키지 5만 원 (개별 만·천 단가 UI는 제거) */
+/** 기획 단일가: 인연 종결 풀패키지 (개별 만·천 단가 UI는 제거) */
 export const RITUAL_PRICES: Record<RitualProductId, number> = {
-  kakao: 50_000,
-  tarot: 50_000,
-  persona: 50_000,
+  kakao: 35_000,
+  tarot: 35_000,
+  persona: 35_000,
 };
 
-/** 인연 종결 풀패키지 — 페이액션·무통장 복채 기준 금액(기획) */
-export const FULL_PACKAGE_PRICE_WON = 50_000;
+/** 인연 종결 풀패키지 — 나이스·무통장 등 복채·승인 검증 기준 금액 */
+export const FULL_PACKAGE_PRICE_WON = 35_000;
 
 /**
  * 포트원 테스트/데모: 메뉴 로드맵 봉인 해제 UI용 플래그.
@@ -137,6 +137,16 @@ export function writeFullPackagePortoneUnlocked(): void {
     // 결제 상태는 브라우저 세션 동안만 유지(영구 저장 금지).
     window.sessionStorage.setItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY, "1");
     window.localStorage.removeItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY);
+  } catch {
+    /* noop */
+  }
+}
+
+/** 메인(홈) 등으로 돌아올 때 — 동일 PC에서도 다시 결제 UX가 맞도록 세션 잠금 해제 */
+export function clearFullPackageSessionUnlock(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.removeItem(RITUAL_FULL_PACKAGE_PORTONE_UNLOCK_KEY);
   } catch {
     /* noop */
   }

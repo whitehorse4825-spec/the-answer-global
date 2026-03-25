@@ -7,7 +7,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { readKakaoAnalysisDraft } from "@/lib/kakaoPayResumeDraft";
 import { mergeEmotionKeywords } from "@/lib/kakaoReportSignals";
-import { requestNicepayFullPackagePayment } from "@/lib/nicepayClient";
+import {
+  prefetchNicepaySdk,
+  requestNicepayFullPackagePayment,
+} from "@/lib/nicepayClient";
 import {
   FULL_PACKAGE_PRICE_WON,
   readFullPackagePortoneUnlocked,
@@ -22,6 +25,7 @@ type RoadmapStep = 1 | 2 | 3;
 
 export default function RitualMenu({ locale }: Props) {
   const t = useTranslations("Ritual");
+  const tLegal = useTranslations("Legal");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -78,6 +82,11 @@ export default function RitualMenu({ locale }: Props) {
       }
     });
   }, [locale, router]);
+
+  useEffect(() => {
+    if (!isClient || unlocked || activeStep !== 3) return;
+    prefetchNicepaySdk();
+  }, [isClient, unlocked, activeStep]);
 
   useEffect(() => {
     const el =
@@ -414,6 +423,33 @@ export default function RitualMenu({ locale }: Props) {
           <p className="mt-3 text-center text-[11px] leading-[1.75] text-white/45 sm:text-[12px]">
             {t("roadmapPortoneFinePrint")}
           </p>
+          <nav
+            className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[10px] text-white/38 sm:text-[11px]"
+            aria-label={t("roadmapFooterLegalNav")}
+          >
+            <Link
+              href={`/${locale}/terms`}
+              className="text-[#c9a962]/80 underline-offset-2 hover:text-[#e8d49a] hover:underline"
+            >
+              {tLegal("termsLink")}
+            </Link>
+            <span className="text-white/25" aria-hidden>
+              ·
+            </span>
+            <Link
+              href={`/${locale}/privacy`}
+              className="text-[#c9a962]/80 underline-offset-2 hover:text-[#e8d49a] hover:underline"
+            >
+              {tLegal("privacyLink")}
+            </Link>
+            <span className="w-full text-white/30 sm:w-auto" aria-hidden />
+            <Link
+              href={`/${locale}#site-legal-footer`}
+              className="text-white/45 underline-offset-2 hover:text-white/60 hover:underline"
+            >
+              {t("roadmapFooterBizInfo")}
+            </Link>
+          </nav>
         </div>
       </div>
     </RitualShell>

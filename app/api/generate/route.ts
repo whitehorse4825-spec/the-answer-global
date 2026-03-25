@@ -21,6 +21,6 @@ export async function GET() {
       mode: "preview | full",
     },
     payButtonCopyKo:
-      "단일 5만 원 풀패키지 — NEXT_PUBLIC_RITUAL_FULL_PACKAGE_PAY_URL 또는 무통장 모달",
+      "단일 풀패키지(금액: ritualStorage) — NEXT_PUBLIC_RITUAL_FULL_PACKAGE_PAY_URL 또는 무통장 모달",
   });
 }

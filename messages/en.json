@@ -145,5 +145,18 @@
     "paymentNoteKr": "TossPay · Kakao Pay",
     "paymentNoteGlobal": "Stripe · PayPal",
     "sharedCopied": "Copied"
+  },
+  "Legal": {
+    "termsLink": "Terms of Service",
+    "privacyLink": "Privacy Policy",
+    "backHome": "← Home",
+    "businessPlaceholder": "Business disclosure (name, representative, address, registration, e-commerce registration, customer center) to be added. Set NEXT_PUBLIC_MERCHANT_DISCLOSURE in your environment for a single block of text.",
+    "pgNotice": "Payments are processed through a payment gateway. Please review the terms and privacy policy. Have legal counsel adapt any binding language to your business.",
+    "termsTitle": "Terms of Service",
+    "termsLead": "Draft outline for e-commerce and payment review. Complete with business details, dispute resolution, and withdrawal/refund rules before launch.",
+    "termsBody": "Article 1 (Purpose)\nThese terms govern use of The Answer web service (the \"Service\"), including digital content and related features.\n\nArticle 2 (Definitions)\n\"User\" means anyone who accesses the Service under these terms.\n\"Paid service\" means package content available for a fee.\n\nArticle 3 (Effect)\nTerms become effective when posted or linked on the Service and the User accepts them.\n\nArticle 4 (Service)\nThe Service may provide AI, text, image, or other digital content as described in-app.\n\nArticle 5 (Price & payment)\nPrices and payment methods follow in-app checkout and the policies of the payment provider.\n\nArticle 6 (Refunds)\nDigital goods and applicable laws may limit cancellation or refunds; see operational policy.\n\nArticle 7 (Disclaimer)\nContent may be for reference or entertainment and does not replace medical, legal, or investment advice.\n\nArticle 8 (Contact)\nDisputes may be submitted via the customer channel shown in the business disclosure.",
+    "privacyTitle": "Privacy Policy",
+    "privacyLead": "Framework aligned with common privacy practices. Update items collected, retention, and processors to match your operations.",
+    "privacyBody": "1. Data collected\nName, birth date, minimal consultation details, payments, and server logs may be collected.\n\n2. Purposes\nProvide content, verify identity, process payments/refunds, handle disputes, improve the Service.\n\n3. Retention\nKept as required by law and internal policy; deleted when no longer needed unless law requires storage.\n\n4. Third parties & processors\nPayment providers, cloud hosting, and other vendors may process data under contract.\n\n5. Your rights\nYou may request access, correction, deletion, or restriction via the contact channel.\n\n6. Security\nReasonable technical and organizational safeguards are applied.\n\n7. Contact\nUse the contact information in the footer for privacy inquiries."
   }
 }

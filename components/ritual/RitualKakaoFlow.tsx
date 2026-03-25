@@ -453,7 +453,7 @@ export default function RitualKakaoFlow({ locale }: Props) {
 
   /**
    * 미결제: 간보기(preview)만 생성.
-   * 풀패키지(5만) 결제 완료: **천기누설 전문(full)**만 생성 — `setPaid(false)` 금지(간보기로 되돌아가는 버그 방지).
+   * 풀패키지 결제 완료: **천기누설 전문(full)**만 생성 — `setPaid(false)` 금지(간보기로 되돌아가는 버그 방지).
    */
   const analyze = useCallback(async () => {
     if (busy) return;

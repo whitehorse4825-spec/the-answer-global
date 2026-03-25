@@ -1,9 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { requestNicepayFullPackagePayment } from "@/lib/nicepayClient";
+import {
+  prefetchNicepaySdk,
+  requestNicepayFullPackagePayment,
+} from "@/lib/nicepayClient";
 import type { RitualProductId } from "@/lib/ritualStorage";
 import { RITUAL_PRICES, readRitualIntake } from "@/lib/ritualStorage";
 
@@ -36,6 +39,10 @@ export default function RitualPayButton({
   const displayLabel = label.includes("{amount}")
     ? label.replace("{amount}", amount.toLocaleString("ko-KR"))
     : label;
+
+  useEffect(() => {
+    prefetchNicepaySdk();
+  }, []);
 
   return (
     <button

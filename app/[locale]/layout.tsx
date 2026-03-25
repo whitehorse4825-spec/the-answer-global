@@ -2,6 +2,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import SiteLegalFooter from "@/components/SiteLegalFooter";
 import { routing } from "@/i18n/routing";
 
 type Props = {
@@ -29,7 +30,10 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <div className={fontClass}>{children}</div>
+      <div className={`${fontClass} flex min-h-screen flex-col`}>
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+        <SiteLegalFooter locale={locale} />
+      </div>
     </NextIntlClientProvider>
   );
 }

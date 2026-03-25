@@ -50,7 +50,7 @@ export type FullPackagePaymentResult =
   | { ok: false; cancelled?: boolean; message?: string };
 
 /**
- * 인연 종결 풀패키지(5만 원) — 포트원 V2 `requestPayment`
+ * 인연 종결 풀패키지(금액은 ritualStorage의 FULL_PACKAGE_PRICE_WON) — 포트원 V2 `requestPayment`
  * 서버 검증: API Secret + PortOne 결제 조회 API (별도 라우트에서 처리 권장)
  */
 export async function requestFullPackagePortonePayment(
